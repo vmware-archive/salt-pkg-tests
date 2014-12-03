@@ -9,7 +9,7 @@
   {% endif %}
 
 include:
-   - salt-pkg-install-tests.epel
+   - test_install.epel
 
 saltstack-copr:
   pkgrepo.managed:
@@ -23,7 +23,7 @@ saltstack-copr:
 
 {% elif os == 'Debian' %}
 include:
-  - salt-pkg-install-tests.debian
+  - test_install.debian
 
 # Get the GPG key for Debian/Ubuntu Packages
 debian_key:

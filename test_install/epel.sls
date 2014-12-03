@@ -1,5 +1,5 @@
 include:
-  - salt-pkg-install-tests.install_salt
+  - test_install.install_salt
 
 # Update mirrors
 yum_update:

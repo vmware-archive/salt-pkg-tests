@@ -1,5 +1,5 @@
 nclude:
-  - salt-pkg-install-tests.install_salt
+  - test_install.install_salt
 
 {% set distro = salt['grains.get']('id', '')  %}
 
