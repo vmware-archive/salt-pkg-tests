@@ -1,5 +1,6 @@
 {% set os = salt['grains.get']('os', '') %}
 {% set os_family = salt['grains.get']('os_family', '') %}
+{% set os_major_release = salt['grains.get']('osmajorrelease', '') %}
 
 {% if os_family == 'RedHat' %}
   {% if os == 'Fedora' %}
@@ -11,10 +12,12 @@
 include:
    - test_install.epel
 
+{% if os_major_release == '5' %}
 python-hashlib:
   pkg.installed:
     - require_in:
       - pkgrepo: saltstack-copr
+{% endif %}
 
 saltstack-copr:
   pkgrepo.managed:
