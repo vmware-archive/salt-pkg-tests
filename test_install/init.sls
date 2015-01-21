@@ -11,6 +11,11 @@
 include:
    - test_install.epel
 
+python-hashlib:
+  pkg.install:
+    - require_in:
+      - pkgrepo: saltstack-copr
+
 saltstack-copr:
   pkgrepo.managed:
     - humanname: Copr repo for salt owned by saltstack

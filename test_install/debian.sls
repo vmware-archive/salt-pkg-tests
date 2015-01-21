@@ -1,4 +1,4 @@
-nclude:
+include:
   - test_install.install_salt
 
 {% set distro = salt['grains.get']('id', '')  %}
