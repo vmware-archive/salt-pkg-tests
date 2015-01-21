@@ -12,7 +12,7 @@ include:
    - test_install.epel
 
 python-hashlib:
-  pkg.install:
+  pkg.installed:
     - require_in:
       - pkgrepo: saltstack-copr
 
