@@ -22,7 +22,7 @@ python-hashlib:
 saltstack-copr:
   pkgrepo.managed:
     - humanname: Copr repo for salt owned by saltstack
-    - baseurl: http://copr-be.cloud.fedoraproject.org/results/saltstack/salt/{{ repotype }}-$releasever-$basearch/
+    - baseurl: http://copr-be.cloud.fedoraproject.org/results/saltstack/salt/{{ repotype }}-{{ salt['grains.get']('osmajorrelease') }}-$basearch/
     - gpgcheck: 0
     - skip_if_unavailable: True
     - enabled: 1
