@@ -12,13 +12,6 @@
 include:
    - test_install.epel
 
-{% if os_major_release == '5' %}
-python-hashlib:
-  pkg.installed:
-    - require_in:
-      - pkgrepo: saltstack-copr
-{% endif %}
-
 saltstack-copr:
   pkgrepo.managed:
     - humanname: Copr repo for salt owned by saltstack
