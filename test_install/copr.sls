@@ -31,6 +31,14 @@ copr:
 
 {% endif %}
 
+# COPR relies on some EPEL packages, so let's install EPEL now
+{% if os != 'Fedora' %}
+# Install Epel
+epel:
+  cmd.run:
+    - name: yum -y install epel-release
+{% endif %}
+
 # Install salt packages
 {% for pkg in pkgs %}
 {{ pkg }}:
