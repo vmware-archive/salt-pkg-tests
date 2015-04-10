@@ -1,3 +1,4 @@
+{% set os = salt['grains.get']('os', '') %}
 {% set os_major_release = salt['grains.get']('osmajorrelease', '') %}
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
 
