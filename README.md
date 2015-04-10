@@ -1,6 +1,4 @@
-======================
-salt-pkg-install-tests
-======================
+# salt-pkg-install-tests
 
 Salt states to automate salt package installation testing.
 
@@ -11,8 +9,7 @@ operating-system-specific packages located in the default methods as noted in th
 
 This document assumes that there are no Salt packages installed on the target system.
 
-Set Up
-======
+## Set Up
 
 The easiest way to perform package installation testing, currently, is to use
 [Salt Cloud](http://docs.saltstack.com/en/latest/topics/cloud/) to spin up a VM that does not have Salt installed
@@ -35,8 +32,7 @@ Double check that the configuration is correct and simultaneously ignore the hos
 salt-ssh -i <minion-name> test.ping
 ```
 
-State Execution
-===============
+## State Execution
 
 To execute these states by their default installation, do the following:
 ```
@@ -57,16 +53,18 @@ Fedora VMs like so:
 salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'
 ```
 
-Supported Configurations
-------------------------
+### Supported Configurations
 
-Arch:
+**Arch**:
 - Coming Soon!
 
-RHEL/CentOS 6 & 7 and Fedora:
-- Default: Installs packages from EPEL: `salt-ssh <minion-name> state.sls test_install`
-- EPEL-Testing: `salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'`
-- Salt's COPR Repo: `salt-ssh <minion-name> state.sls test_install pillar='{"pkg_repo": "copr"}'`
+**RHEL/CentOS 6 & 7 and Fedora**:
+- Default: Installs packages from EPEL
+  - `salt-ssh <minion-name> state.sls test_install`
+- EPEL-Testing:
+  - `salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'`
+- Salt's COPR Repo:
+  - `salt-ssh <minion-name> state.sls test_install pillar='{"pkg_repo": "copr"}'`
 - Packages that install:
   - salt-master
   - salt-minion
@@ -75,9 +73,10 @@ RHEL/CentOS 6 & 7 and Fedora:
   - salt-ssh
   - salt-syndic
 
-Debian:
+**Debian**:
 - Default: Installs packages from debian.saltstack.com: Coming Soon!
-- Debian's Salt Testing Repo: `salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'`
+- Debian's Salt Testing Repo:
+  - `salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'`
 - Packages that install:
   - salt-master
   - salt-minion
@@ -86,8 +85,9 @@ Debian:
   - salt-ssh
   - salt-syndic
 
-Ubuntu:
-- Default: Installs packages from Salt's ppa: `salt-ssh <minion-name> state.sls test_install`
+**Ubuntu**:
+- Default: Installs packages from Salt's ppa:
+  - `salt-ssh <minion-name> state.sls test_install`
 - Testing: Coming Soon!
 - Packages that install:
   - salt-master
