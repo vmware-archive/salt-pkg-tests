@@ -41,6 +41,13 @@ source_prep:
 #  cmd.run:
 #    - name: add-apt-repository ppa:saltstack/testing
 
+{% if '12' in salt['grains.get']('osrelease_info', '') %}
+add_python_software_properties:
+  cmd.run:
+    - name: apt-get -y install python-software-properties
+
+{% endif %}
+
 add_apt_repo:
   cmd.run:
     - name: add-apt-repository ppa:saltstack/salt
