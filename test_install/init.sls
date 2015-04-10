@@ -26,7 +26,7 @@
 
 # Includes determine where to go next
 include:
-  - install.{{ install_type }}
+  - test_install.{{ install_type }}
 
 # TODO: Likely a useful place to so some systemctl or service start/restart/stop tests
 # TODO: Or we could still use the includes to start messing with services after installations
