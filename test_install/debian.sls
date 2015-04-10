@@ -1,13 +1,23 @@
-include:
-  - test_install.install_salt
+{% set os = salt['grains.get']('os', '') %}
+{% set distro = salt['grains.get']('oscodename', '')  %}
+{% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
+{% set testing = pillar.get('testing', 'False') %}
 
-{% set distro = salt['grains.get']('id', '')  %}
+# Add testing repos for each Debian Distro
+{% if testing == 'True' and os =='Debian' %}
+
+# Get the GPG key for Debian Packages
+debian:
+  cmd.run:
+    - name: wget -O - http://debian.saltstack.com/debian-salt-team-joehealy.gpg.key|apt-key add -
+    - require_in:
+      - file: source_prep
 
 # Add SaltStack's Testing PPA & Debian Backports
-sources_list_prep:
+source_prep:
   file.append:
     - name: /etc/apt/sources.list
-{% if distro == 'squeeze' %}
+    {% if distro == 'squeeze' %}
     - text: |
         ####################
         # Enable SaltStack's package testing repository
@@ -15,23 +25,36 @@ sources_list_prep:
         ####################
         # Enable Debian's Backports repository
         deb http://backports.debian.org/debian-backports squeeze-backports main contrib non-free
-{% else %}
+    {% else %}
     - text: |
         ####################
         # Enable SaltStack's package testing repository
         deb http://debian.saltstack.com/debian {{ distro }}-testing main
+    {% endif %}
+
+{% else %}
+
+# TODO: Figure out why saltstack/testing doesn't work anymore
+# TODO: And implement new Ubuntu testing state if something else is needed
+# Add saltstack/testing repo for Ubuntu releases
+#add_apt_repo:
+#  cmd.run:
+#    - name: add-apt-repository ppa:saltstack/testing
+
+add_apt_repo:
+  cmd.run:
+    - name: add-apt-repository ppa:saltstack/salt
+
 {% endif %}
 
-# Update Debian and Ubuntu Mirrors
+# Update Mirrors
 apt_update:
   cmd.run:
     - name: apt-get update -y
-    - require:
-      - file: sources_list_prep
-    - require_in:
-      - cmd: salt-master
-      - cmd: salt-minion
-      - cmd: salt-api
-      - cmd: salt-cloud
-      - cmd: salt-ssh
-      - cmd: salt-syndic
+
+# Install salt packages
+{% for pkg in pkgs %}
+{{ pkg }}:
+  cmd.run:
+    - name: apt-get -y install {{ pkg }}
+{% endfor %}
