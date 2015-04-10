@@ -65,8 +65,8 @@ Arch:
 
 RHEL/CentOS 6 & 7 and Fedora:
 - Default: Installs packages from EPEL: `salt-ssh <minion-name> state.sls test_install`
-- EPEL-Testing: `salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'
-- Salt's COPR Repo: `salt-ssh <minion-name> state.sls test_install pillar='{"pkg_repo": "copr"}'
+- EPEL-Testing: `salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'`
+- Salt's COPR Repo: `salt-ssh <minion-name> state.sls test_install pillar='{"pkg_repo": "copr"}'`
 - Packages that install:
   - salt-master
   - salt-minion
@@ -76,8 +76,8 @@ RHEL/CentOS 6 & 7 and Fedora:
   - salt-syndic
 
 Debian:
-- Default: Install packages from debian.saltstack.com: Coming Soon!
-- Debian's Salt Testing Repo: `salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'
+- Default: Installs packages from debian.saltstack.com: Coming Soon!
+- Debian's Salt Testing Repo: `salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'`
 - Packages that install:
   - salt-master
   - salt-minion
@@ -87,7 +87,7 @@ Debian:
   - salt-syndic
 
 Ubuntu:
-- Default: Install packages from Salt's ppa: `salt-ssh <minion-name> state.sls test_install`
+- Default: Installs packages from Salt's ppa: `salt-ssh <minion-name> state.sls test_install`
 - Testing: Coming Soon!
 - Packages that install:
   - salt-master
