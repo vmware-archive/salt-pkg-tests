@@ -34,13 +34,6 @@ source_prep:
 
 {% else %}
 
-# TODO: Figure out why saltstack/testing doesn't work anymore
-# TODO: And implement new Ubuntu testing state if something else is needed
-# Add saltstack/testing repo for Ubuntu releases
-add_apt_repo:
-  cmd.run:
-    - name: add-apt-repository ppa:saltstack/testing
-
 {% if '12' in salt['grains.get']('osrelease_info', '') %}
 add_python_software_properties:
   cmd.run:
@@ -48,9 +41,20 @@ add_python_software_properties:
 
 {% endif %}
 
+{% if testing == 'True' %}
+
+# Add saltstack/testing repo for Ubuntu releases
+add_apt_repo:
+  cmd.run:
+    - name: add-apt-repository ppa:saltstack/salt-testing
+
+{% else %}
+
 add_apt_repo:
   cmd.run:
     - name: add-apt-repository ppa:saltstack/salt
+
+{% endif %}
 
 {% endif %}
 
