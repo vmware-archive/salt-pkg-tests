@@ -4,7 +4,11 @@
 {% set testing = pillar.get('testing', 'false') %}
 
 # Decipher OS and set the package repository type and associated command
-{% if os_family == 'RedHat' %}
+{% if os_family == 'Arch' %}
+
+    {% set install_type = pillar.get('pkg_repo', 'arch') %}
+
+{% elif os_family == 'RedHat' %}
 
     # CentOS/RHEL 5 is only available from salt's COPR repo - set this as default
     {% if os_major_release == '5' %}
