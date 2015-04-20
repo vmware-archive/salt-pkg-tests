@@ -56,7 +56,16 @@ salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'
 ### Supported Configurations
 
 **Arch**:
-- Coming Soon!
+- Default: Installs salt-zmq packages from Pacman stable
+  - `salt-ssh <minion-name> state.sls test_install`
+- Community-Testing:
+  - `salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'`
+- salt-raet vs salt-zmq packages:
+  - By default, the salt-zmq packages are installed. However, you can change the installation to salt-raet by specifying
+  the "transport" option via pillar on the CLI:
+    - `salt-ssh <minion-name> state.sls test_install pillar='{"transport": "raet"}'`
+  - You can also install the salt-raet packages from community-testing:
+    - `salt-ssh <minion-name> state.sls test_install pillar='{"transport": "raet", "testing": "True"}'
 
 **RHEL/CentOS 6 & 7 and Fedora**:
 - Default: Installs packages from EPEL
