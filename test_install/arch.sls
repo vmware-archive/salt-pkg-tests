@@ -1,7 +1,7 @@
 {% set transport = pillar.get('transport', 'zmq') %}
 {% set testing = pillar.get('testing', 'False') %}
 {% set pkgs = ['salt-zmq'] %}
-{% set install_cmd = 'pacman -Syu ' %}
+{% set install_cmd = 'pacman -Sy --noconfirm ' %}
 
 {% if transport == 'raet' %}
     {% set pkgs = ['salt-raet'] %}
@@ -9,7 +9,7 @@
 
 {% if testing == 'True' %}
 
-    {% set install_cmd = 'pacman -Syu testing/' %}
+    {% set install_cmd = 'pacman -Sy --noconfirm testing/' %}
 
 # Enable the testing repo in /etc/pacman.conf
 enable_arch_testing_mirror:
