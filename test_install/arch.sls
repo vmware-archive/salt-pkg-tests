@@ -15,9 +15,9 @@
 enable_arch_testing_mirror:
   file.append:
     - name: /etc/pacman.conf
-    - text:
-      - [testing]
-      - Include = /etc/pacman.d/mirrorlist
+    - text: |
+        [community-testing]
+        Include = /etc/pacman.d/mirrorlist
 
 {% endif %}
 
