@@ -9,7 +9,7 @@
 
 {% if testing == 'True' %}
 
-    {% set install_cmd = 'pacman -Sy --noconfirm testing/' %}
+    {% set install_cmd = 'pacman -Sy --noconfirm community-testing/' %}
 
 # Enable the testing repo in /etc/pacman.conf
 enable_arch_testing_mirror:
