@@ -34,8 +34,8 @@ source_prep:
 
 {% else %}
 
-{% if '12' in salt['grains.get']('osrelease_info', '') %}
-add_python_software_properties:
+{% if grains['osrelease'].startswith('12.') %}
+add_python_software_properties
   cmd.run:
     - name: apt-get -y install python-software-properties
 
