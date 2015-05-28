@@ -65,7 +65,7 @@ salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'
   the "transport" option via pillar on the CLI:
     - `salt-ssh <minion-name> state.sls test_install pillar='{"transport": "raet"}'`
   - You can also install the salt-raet packages from community-testing:
-    - `salt-ssh <minion-name> state.sls test_install pillar='{"transport": "raet", "testing": "True"}'
+    - `salt-ssh <minion-name> state.sls test_install pillar='{"transport": "raet", "testing": "True"}'`
 
 **RHEL/CentOS 6 & 7 and Fedora**:
 - Default: Installs packages from EPEL
@@ -97,7 +97,8 @@ salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'
 **Ubuntu**:
 - Default: Installs packages from Salt's ppa:
   - `salt-ssh <minion-name> state.sls test_install`
-- Testing: Coming Soon!
+- Testing:
+  - `salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'`
 - Packages that install:
   - salt-master
   - salt-minion
