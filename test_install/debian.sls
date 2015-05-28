@@ -34,8 +34,9 @@ source_prep:
 
 {% else %}
 
+# Ubuntu 12 needs python-software-properties before running add-apt-repository commands
 {% if distro == 'precise' %}
-add_python_software_properties
+add_python_software_properties:
   cmd.run:
     - name: apt-get -y install python-software-properties
 
