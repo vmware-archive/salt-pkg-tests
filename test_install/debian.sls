@@ -34,7 +34,7 @@ source_prep:
 
 {% else %}
 
-{% if grains['osrelease'].startswith('12.') %}
+{% if distro == 'precise' %}
 add_python_software_properties
   cmd.run:
     - name: apt-get -y install python-software-properties
