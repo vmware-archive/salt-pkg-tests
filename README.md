@@ -67,13 +67,36 @@ salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'
   - You can also install the salt-raet packages from community-testing:
     - `salt-ssh <minion-name> state.sls test_install pillar='{"transport": "raet", "testing": "True"}'`
 
-**RHEL/CentOS 6 & 7 and Fedora**:
-- Default: Installs packages from EPEL
-  - `salt-ssh <minion-name> state.sls test_install`
-- EPEL-Testing:
-  - `salt-ssh <minion-name> state.sls test_install pillar='{"testing": "True"}'`
-- Salt's COPR Repo:
-  - `salt-ssh <minion-name> state.sls test_install pillar='{"pkg_repo": "copr"}'`
+**RHEL/CentOS 5, 6, 7 and Fedora**:
+
+The default is to installs packages from EPEL.  This can be overridden by
+pillar data, `pillar={"pkg_repo": "copr"}` or `pillar={"pkg_repo": "koji"}`.
+EPEL-Testing can be specified by pillar data as well, `pillar={"testing":
+"True"}`.
+```console
+# salt-cloud --no-deploy -p <profile> <ssh-minion>
+...
+    public_ips:
+            - <public-IP>
+...
+# cat >> /etc/salt/roster
+<minion>:
+  host: <public-IP>
+  user: root
+  passwd: <passwd>
+# salt-ssh -i <ssh-minion> test.ping
+# salt-ssh <ssh-minion> state.sls test_install pillar='{"salt_version": "2015.5.2", "pkg_version": "3"}'
+# salt-ssh <ssh-minion> state.sls test_setup pillar='{"salt_version": "2015.5.2", "pkg_version": "3"}'
+# salt-ssh <ssh-minion> state.sls test_run pillar='{"salt_version": "2015.5.2", "pkg_version": "3"}'
+# echo y | salt-cloud -d <ssh-minion>
+```
+
+RHEL/CentOS 5 requires an additional setup step to be executed before salt-ssh
+can run:
+```console
+# echo yes | ssh <public-IP> "yum -y install epel-release && yum -y makecache && yum -y install python26"
+```
+
 - Packages that install:
   - salt-master
   - salt-minion
