@@ -1,10 +1,10 @@
-{% set os = salt['grains.get']('os', '') %}
+{% set os_ = salt['grains.get']('os', '') %}
 {% set distro = salt['grains.get']('oscodename', '')  %}
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
 {% set testing = pillar.get('testing', 'False') %}
 
 # Add testing repos for each Debian Distro
-{% if testing == 'True' and os =='Debian' %}
+{% if testing == 'True' and os_ =='Debian' %}
 
 # Get the GPG key for Debian Packages
 debian:
