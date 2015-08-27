@@ -5,6 +5,7 @@
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
 
+
 get-key:
   cmd.run:
     - name: wget -O - https://repo.saltstack.com/apt/deb{{ os_major_release }}/SALTSTACK-GPG-KEY.pub | apt-key add -

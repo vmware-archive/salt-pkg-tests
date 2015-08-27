@@ -5,6 +5,7 @@
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
 
+
 get-key:
   cmd.run:
     - name: rpm --import https://repo.saltstack.com/yum/rhel{{ os_major_release }}/SALTSTACK-GPG-KEY.pub
@@ -17,7 +18,7 @@ add-repository:
         ####################
         # Enable SaltStack's package repository
         [saltstack-repo]
-        name=SaltStack repo for RHEL/CentOS $releasever - $basearch
+        name=SaltStack repo for RHEL/CentOS $releasever
         baseurl=https://repo.saltstack.com/yum/rhel$releasever
         enabled=1
         gpgcheck=1
