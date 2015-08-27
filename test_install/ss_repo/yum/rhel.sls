@@ -8,16 +8,21 @@
 
 get-key:
   cmd.run:
-    - name: wget -O - https://repo.saltstack.com/apt/deb{{ os_major_release }}/SALTSTACK-GPG-KEY.pub | apt-key add -
+    - name: rpm --import https://repo.saltstack.com/yum/rhel{{ os_major_release }}/SALTSTACK-GPG-KEY.pub
 
 add-repository:
-  file.append:
-    - name: /etc/apt/sources.list
-    - text: |
-
+  file.managed:
+    - name: /etc/yum.repos.d/saltstack.repo
+    - makedirs: True
+    - contents: |
         ####################
         # Enable SaltStack's package repository
-        deb http://repo.saltstack.com/apt/deb{{ os_major_release }} {{ distro }} contrib
+        [saltstack-repo]
+        name=SaltStack repo for RHEL/CentOS $releasever
+        baseurl=https://repo.saltstack.com/yum/rhel$releasever
+        enabled=1
+        gpgcheck=1
+        gpgkey=https://repo.saltstack.com/yum/rhel$releasever/SALTSTACK-GPG-KEY.pub
     - require:
       - cmd: get-key
 
@@ -26,6 +31,12 @@ update-package-database:
     - name: pkg.refresh_db
     - require:
       - file: add-repository
+
+update-package-database-backup:
+  cmd.run:
+    - name: yum -y makecache
+    - onfail:
+      - module: update-package-database
 
 upgrade-packages:
   pkg.uptodate:

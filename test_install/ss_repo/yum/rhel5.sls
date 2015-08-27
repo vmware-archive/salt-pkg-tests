@@ -4,20 +4,26 @@
 
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
+{% set repo_key = 'SALTSTACK-EL5-GPG-KEY.pub' %}
 
 
 get-key:
   cmd.run:
-    - name: wget -O - https://repo.saltstack.com/apt/deb{{ os_major_release }}/SALTSTACK-GPG-KEY.pub | apt-key add -
+    - name: wget https://repo.saltstack.com/yum/rhel{{ os_major_release }}/{{ repo_key }} ; rpm --import {{ repo_key }} ; rm -f {{ repo_key }}
 
 add-repository:
-  file.append:
-    - name: /etc/apt/sources.list
-    - text: |
-
+  file.managed:
+    - name: /etc/yum.repos.d/saltstack.repo
+    - makedirs: True
+    - contents: |
         ####################
         # Enable SaltStack's package repository
-        deb http://repo.saltstack.com/apt/deb{{ os_major_release }} {{ distro }} contrib
+        [saltstack-repo]
+        name=SaltStack repo for RHEL/CentOS $releasever
+        baseurl=https://repo.saltstack.com/yum/rhel$releasever
+        enabled=1
+        gpgcheck=1
+        gpgkey=https://repo.saltstack.com/yum/rhel$releasever/{{ repo_key }}
     - require:
       - cmd: get-key
 
@@ -26,6 +32,12 @@ update-package-database:
     - name: pkg.refresh_db
     - require:
       - file: add-repository
+
+update-package-database-backup:
+  cmd.run:
+    - name: yum -y makecache
+    - onfail:
+      - module: update-package-database
 
 upgrade-packages:
   pkg.uptodate:
