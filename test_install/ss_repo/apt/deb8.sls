@@ -28,12 +28,13 @@ update-package-database:
 
 upgrade-packages:
   pkg.uptodate:
-    - name: pkg.refresh_db
+    - name: uptodate
     - require:
       - module: update-package-database
 
 install-salt:
-  cmd.run:
-    - name: apt-get -y install {{ pkgs | join(' ') }}
+  pkg.installed:
+    - name: salt-pkgs
+    - pkgs: {{ pkgs }}
     - require:
       - pkg: upgrade-packages
