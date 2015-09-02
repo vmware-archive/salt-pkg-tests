@@ -5,6 +5,14 @@
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
 
+{% if salt_version %}
+  {% set versioned_pkgs = [] %}
+  {% for pkg in pkgs %}
+    {% do versioned_pkgs.append(pkg + '-' + salt_version) %}
+  {% endfor %}
+  {% set pkgs = versioned_pkgs %}
+{% endif %}
+
 
 get-key:
   cmd.run:
