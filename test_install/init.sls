@@ -19,6 +19,10 @@
 
     {% set install_type = pillar.get('pkg_repo', 'debian') %}
 
+{% elif os_family == 'Suse' %}
+
+  {% set install_type = pillar.get('pkg_repo', 'suse') %}
+
 {% endif %}
 
 # Includes determine where to go next
