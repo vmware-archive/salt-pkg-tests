@@ -4,7 +4,7 @@
 {% set pkg_version = salt['pillar.get']('pkg_version', '1') %}
 
 {% set on_redhat = os_family == 'RedHat' %}
-{% set on_fedora = os_ == 'Fedora' %}
+{% set on_fedora = os_family == 'Fedora' %}
 
 {% set url_pkg_ver = salt['pillar.get']('pkg_version', '').lstrip('v') %}
 {% set pkg_url = 'https://pypi.python.org/packages/source/s/salt/salt-{0}.tar.gz'.format(url_pkg_ver) %}
