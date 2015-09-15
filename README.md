@@ -120,3 +120,16 @@ can run:
   - salt-cloud
   - salt-ssh
   - salt-syndic
+
+**openSuse**:
+- Default: Installs packages from opensuse build service repo devel:languages:python:
+  - `salt-ssh <minion-name> state.sls test_install`
+- Tumbleweed:
+  - `salt-ssh <minion-name> state.sls test_install pillar='{"codename": "Tumbleweed"}'`
+- Packages that install:
+  - salt-master
+  - salt-minion
+  - salt-api
+  - salt-cloud
+  - salt-ssh
+  - salt-syndic
