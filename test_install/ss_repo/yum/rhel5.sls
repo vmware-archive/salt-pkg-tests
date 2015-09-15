@@ -59,3 +59,9 @@ install-salt:
     - pkgs: {{ pkgs }}
     - require:
       - pkg: upgrade-packages
+
+install-salt-backup:
+  cmd.run:
+    - name: yum -y install {{ pkgs | join(' ') }}
+    - onfail:
+      - pkg: install-salt
