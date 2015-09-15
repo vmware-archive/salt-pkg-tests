@@ -29,8 +29,8 @@ pillar:
 output:
   cmd.run:
     - names:
-      - salt --output=yaml {{ minion_id }} test.fib 128
-      - salt --output=json {{ minion_id }} test.fib 128
+      - salt --output=yaml {{ minion_id }} test.fib 7
+      - salt --output=json {{ minion_id }} test.fib 7
 
 exec:
   cmd.run:
