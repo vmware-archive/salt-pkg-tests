@@ -16,7 +16,7 @@
 
 get-key:
   cmd.run:
-    - name: wget -O - https://repo.saltstack.com/apt/deb{{ os_major_release }}/SALTSTACK-GPG-KEY.pub | apt-key add -
+    - name: wget -O - https://repo.saltstack.com/apt/debian/SALTSTACK-GPG-KEY.pub | apt-key add -
 
 add-repository:
   file.append:
@@ -25,7 +25,7 @@ add-repository:
 
         ####################
         # Enable SaltStack's package repository
-        deb http://repo.saltstack.com/apt/deb{{ os_major_release }} {{ distro }} contrib
+        deb http://repo.saltstack.com/apt/debian {{ distro }} contrib
     - require:
       - cmd: get-key
 
