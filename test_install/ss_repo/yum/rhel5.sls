@@ -27,8 +27,8 @@ add-repository:
         ####################
         # Enable SaltStack's package repository
         [saltstack-repo]
-        name=SaltStack repo for RHEL/CentOS $releasever
-        baseurl=https://repo.saltstack.com/yum/rhel$releasever
+        name=SaltStack repo for RHEL/CentOS {{ os_major_release }}
+        baseurl=https://repo.saltstack.com/yum/rhel{{ os_major_release }}
         enabled=1
         gpgcheck=1
         gpgkey=https://repo.saltstack.com/yum/rhel$releasever/{{ repo_key }}
