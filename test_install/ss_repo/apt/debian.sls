@@ -28,7 +28,11 @@ add-repository:
 
         ####################
         # Enable SaltStack's package repository
+        {% if staging %}
+        deb http://repo.saltstack.com/{{ staging }}apt/debian{{ salt_version }} {{ distro }} contrib
+        {% else %}
         deb http://repo.saltstack.com/{{ staging }}apt/debian {{ distro }} contrib
+        {% endif %}
     - require:
       - cmd: get-key
 
