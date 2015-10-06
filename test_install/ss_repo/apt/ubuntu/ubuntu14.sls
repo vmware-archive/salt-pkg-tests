@@ -28,7 +28,7 @@ add-repository:
 
         ####################
         # Enable SaltStack's package repository
-        deb http://repo.saltstack.com/{{ staging }}apt/ubuntu/ubuntu{{ os_major_release }} {{ distro }} contrib
+        deb http://repo.saltstack.com/{{ staging }}apt/ubuntu/ubuntu{{ os_major_release }} {{ distro }} main
     - require:
       - cmd: get-key
 

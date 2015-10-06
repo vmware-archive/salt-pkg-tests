@@ -2,6 +2,9 @@
 {% set os_major_release = salt['grains.get']('osmajorrelease', '') %}
 {% set distro = salt['grains.get']('oscodename', '')  %}
 
+{% if salt['pillar.get']('staging') %}
+  {% set staging = 'staging/' %}
+{% endif  %}
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
 
@@ -16,7 +19,7 @@
 
 get-key:
   cmd.run:
-    - name: rpm --import https://repo.saltstack.com/yum/rhel{{ os_major_release }}/SALTSTACK-GPG-KEY.pub
+    - name: rpm --import https://repo.saltstack.com/{{ staging }}yum/rhel{{ os_major_release }}/SALTSTACK-GPG-KEY.pub
 
 add-repository:
   file.managed:
@@ -27,10 +30,10 @@ add-repository:
         # Enable SaltStack's package repository
         [saltstack-repo]
         name=SaltStack repo for RHEL/CentOS {{ os_major_release }}
-        baseurl=https://repo.saltstack.com/yum/rhel{{ os_major_release }}
+        baseurl=https://repo.saltstack.com/{{ staging }}yum/rhel{{ os_major_release }}
         enabled=1
         gpgcheck=1
-        gpgkey=https://repo.saltstack.com/yum/rhel$releasever/SALTSTACK-GPG-KEY.pub
+        gpgkey=https://repo.saltstack.com/{{ staging }}yum/rhel{{ os_major_release}}/SALTSTACK-GPG-KEY.pub
     - require:
       - cmd: get-key
 
