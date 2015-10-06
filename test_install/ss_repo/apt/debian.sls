@@ -12,7 +12,11 @@
 {% if salt_version %}
   {% set versioned_pkgs = [] %}
   {% for pkg in pkgs %}
-    {% do versioned_pkgs.append(pkg + '=' + salt_version + '+ds') %}
+    {% if staging %}
+      {% do versioned_pkgs.append(pkg + '=' + salt_version + '+ds-1') %}
+    {% else %}
+      {% do versioned_pkgs.append(pkg + '=' + salt_version + '+ds') %}
+    {% endif %}
   {% endfor %}
   {% set pkgs = versioned_pkgs %}
 {% endif %}
