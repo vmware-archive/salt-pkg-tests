@@ -34,7 +34,7 @@ add-repository:
         ####################
         # Enable SaltStack's package repository
         {% if staging %}
-        deb http://repo.saltstack.com/{{ staging }}apt/debian/{{ branch }} {{ distro }} contrib
+        deb http://repo.saltstack.com/{{ staging }}apt/debian/{{ branch }} {{ distro }} main
         {% else %}
         deb http://repo.saltstack.com/{{ staging }}apt/debian {{ distro }} contrib
         {% endif %}
