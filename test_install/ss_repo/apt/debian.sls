@@ -6,6 +6,7 @@
   {% set staging = 'staging/' %}
 {% endif  %}
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
+{% set branch = salt['pillar.get']('branch', '') %}
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
 
 {% if salt_version %}
@@ -29,7 +30,7 @@ add-repository:
         ####################
         # Enable SaltStack's package repository
         {% if staging %}
-        deb http://repo.saltstack.com/{{ staging }}apt/debian{{ salt_version }} {{ distro }} contrib
+        deb http://repo.saltstack.com/{{ staging }}apt/debian/{{ branch }} {{ distro }} contrib
         {% else %}
         deb http://repo.saltstack.com/{{ staging }}apt/debian {{ distro }} contrib
         {% endif %}
