@@ -19,7 +19,7 @@
 
 get-key:
   cmd.run:
-    - name: wget -O - https://repo.saltstack.com/{{ staging }}apt/debian/SALTSTACK-GPG-KEY.pub | apt-key add -
+    - name: wget -O - https://repo.saltstack.com/apt/debian/SALTSTACK-GPG-KEY.pub | apt-key add -
 
 add-repository:
   file.append:
