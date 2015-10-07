@@ -6,20 +6,13 @@
   {% set staging = 'staging/' %}
 {% endif  %}
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
+{% set branch = salt['pillar.get']('branch', '') %}
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
-
-{% if salt_version %}
-  {% set versioned_pkgs = [] %}
-  {% for pkg in pkgs %}
-    {% do versioned_pkgs.append(pkg + '=' + salt_version + '+ds') %}
-  {% endfor %}
-  {% set pkgs = versioned_pkgs %}
-{% endif %}
 
 
 get-key:
   cmd.run:
-    - name: wget -O - https://repo.saltstack.com/{{ staging }}apt/debian/SALTSTACK-GPG-KEY.pub | apt-key add -
+    - name: wget -O - https://repo.saltstack.com/apt/debian/SALTSTACK-GPG-KEY.pub | apt-key add -
 
 add-repository:
   file.append:
@@ -28,7 +21,11 @@ add-repository:
 
         ####################
         # Enable SaltStack's package repository
+        {% if staging %}
+        deb http://repo.saltstack.com/{{ staging }}apt/debian/{{ branch }} {{ distro }} main
+        {% else %}
         deb http://repo.saltstack.com/{{ staging }}apt/debian {{ distro }} contrib
+        {% endif %}
     - require:
       - cmd: get-key
 
