@@ -9,18 +9,6 @@
 {% set branch = salt['pillar.get']('branch', '') %}
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
 
-{% if salt_version %}
-  {% set versioned_pkgs = [] %}
-  {% for pkg in pkgs %}
-    {% if staging %}
-      {% do versioned_pkgs.append(pkg + '_' + salt_version + '+ds-1') %}
-    {% else %}
-      {% do versioned_pkgs.append(pkg + '_' + salt_version + '+ds') %}
-    {% endif %}
-  {% endfor %}
-  {% set pkgs = versioned_pkgs %}
-{% endif %}
-
 
 get-key:
   cmd.run:
