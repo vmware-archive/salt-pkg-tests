@@ -50,6 +50,6 @@ wait_for_key:
 
 accept_key:
   cmd.run:
-    - name: 'echo y | salt-key -a {{ minion_id }}'
+    - name: 'salt-key -ya {{ minion_id }}'
     - require:
       - cmd: wait_for_key
