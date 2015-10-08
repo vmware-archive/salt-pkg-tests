@@ -6,8 +6,20 @@
   {% set staging = 'staging/' %}
 {% endif  %}
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
-{% set branch = salt['pillar.get']('branch', '') %}
+{% if salt_version %}
+  {% set branch = salt_version.rsplit('.', 1)[0] %}
+{% else %}
+  {% set branch = salt['pillar.get']('branch', '') %}
+{% endif %}
+
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
+{% if salt_version %}
+  {% set versioned_pkgs = [] %}
+  {% for pkg in pkgs %}
+    {% do versioned_pkgs.append(pkg + '=' + salt_version + '+ds-1') %}
+  {% endfor %}
+  {% set pkgs = versioned_pkgs %}
+{% endif %}
 
 
 get-key:
