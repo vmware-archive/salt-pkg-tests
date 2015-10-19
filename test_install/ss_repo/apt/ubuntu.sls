@@ -1,15 +1,13 @@
 {% set os_ = salt['grains.get']('os', '') %}
 {% set os_major_release = salt['grains.get']('osrelease', '').split('.')[0] %}
-{% set distro = salt['grains.get']('oscodename', '')  %}
+{% set os_code_name = salt['grains.get']('oscodename', '')  %}
 
-{% if salt['pillar.get']('staging') %}
-  {% set staging = 'staging/' %}
-{% endif  %}
+{% set staging = 'staging/' if salt['pillar.get']('staging') else '' %}
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
-{% if salt_version %}
-  {% set branch = salt_version.rsplit('.', 1)[0] %}
+{% if salt['pillar.get']('branch') %}
+  {% set branch = salt['pillar.get']('branch') %}
 {% else %}
-  {% set branch = salt['pillar.get']('branch', '') %}
+  {% set branch = salt_version.rsplit('.', 1)[0] if salt_version else 'latest' %}
 {% endif %}
 
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
@@ -24,7 +22,7 @@
 
 get-key:
   cmd.run:
-    - name: wget -O - https://repo.saltstack.com/apt/ubuntu/ubuntu{{ os_major_release }}/SALTSTACK-GPG-KEY.pub | apt-key add -
+    - name: wget -O - https://repo.saltstack.com/{{ staging }}apt/ubuntu/ubuntu{{ os_major_release }}/{{ branch }}/SALTSTACK-GPG-KEY.pub | apt-key add -
 
 add-repository:
   file.append:
@@ -33,7 +31,7 @@ add-repository:
 
         ####################
         # Enable SaltStack's package repository
-        deb http://repo.saltstack.com/{{ staging }}apt/ubuntu/ubuntu{{ os_major_release }}/{{ branch }} {{ distro }} main
+        deb http://repo.saltstack.com/{{ staging }}apt/ubuntu/ubuntu{{ os_major_release }}/{{ branch }} {{ os_code_name }} main
     - require:
       - cmd: get-key
 
