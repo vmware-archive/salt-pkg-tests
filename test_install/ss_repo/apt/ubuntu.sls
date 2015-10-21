@@ -4,6 +4,7 @@
 
 {% set staging = 'staging/' if salt['pillar.get']('staging') else '' %}
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
+{% set pkg_version = salt['pillar.get']('pkg_version', '1') %}
 {% if salt['pillar.get']('branch') %}
   {% set branch = salt['pillar.get']('branch') %}
 {% else %}
@@ -14,7 +15,7 @@
 {% if salt_version %}
   {% set versioned_pkgs = [] %}
   {% for pkg in pkgs %}
-    {% do versioned_pkgs.append(pkg + '=' + salt_version + '+ds-1') %}
+    {% do versioned_pkgs.append(pkg + '=' + salt_version + '+ds-' + pkg_version) %}
   {% endfor %}
   {% set pkgs = versioned_pkgs %}
 {% endif %}
