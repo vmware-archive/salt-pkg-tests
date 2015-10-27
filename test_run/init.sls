@@ -1,9 +1,17 @@
 {% set salt_version = pillar.get('salt_version', '') %}
 {% set minion_id = '{0}-{1}'.format(grains.get('id'), salt_version) %}
 
+{% set utils = ['salt', 'salt-api', 'salt-call', 'salt-cloud', 'salt-cp', 'salt-key', 'salt-master', 'salt-minion', 'salt-proxy', 'salt-run', 'salt-ssh', 'salt-syndic', 'salt-unity', 'spm'] %}
 
 # remember that the top level cmd.run statements here are instructions to the
 # salt-ssh minion, not the salt actually being tested
+utils_installed:
+  cmd.run:
+    - names:
+      {% for util in utils %}
+      - '{{ util }} --help 1> /dev/null ; ( exit $? )'
+      {% endfor %}
+
 key:
   cmd.run:
     - name: salt-key -L
