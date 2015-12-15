@@ -1,4 +1,5 @@
 {% set os_ = salt['grains.get']('os', '') %}
+{% set os_arch = salt['grains.get']('osarch', '') %}
 {% set os_major_release = salt['grains.get']('osmajorrelease', '') %}
 {% set os_family = salt['grains.get']('os_family', '')  %}
 {% set on_rhel_5 = True if os_family == 'RedHat' and os_major_release == '5' else False %}
@@ -23,7 +24,7 @@
 
 {% set dev = 'dev/' if salt['pillar.get']('dev') else '' %}
 {% if pillar.get('new_repo') %}
-  {% set repo_path = '{0}yum/redhat/$releasever/$basearch/{1}'.format(dev, branch) %}
+  {% set repo_path = '{0}yum/redhat/{1}/{2}/{3}'.format(dev, os_major_release, os_arch, branch) %}
 {% else %}
   {% set repo_path = '{0}yum/rhel{1}'.format(dev, os_major_release) %}
 {% endif %}
@@ -33,9 +34,9 @@
 get-key:
   cmd.run:
     {% if on_rhel_5 %}
-    - name: wget https://repo.saltstack.com/{{ dev }}yum/rhel{{ os_major_release }}/{{ repo_key }} ; rpm --import {{ repo_key }} ; rm -f {{ repo_key }}
+    - name: wget https://repo.saltstack.com/{{ repo_path }}/{{ repo_key }} ; rpm --import {{ repo_key }} ; rm -f {{ repo_key }}
     {% else %}
-    - name: rpm --import https://repo.saltstack.com/{{ dev }}yum/rhel{{ os_major_release }}/{{ repo_key }}
+    - name: rpm --import https://repo.saltstack.com/{{ repo_path }}/{{ repo_key }}
     {% endif %}
 
 add-repository:
@@ -44,7 +45,7 @@ add-repository:
     - makedirs: True
     - contents: |
         [saltstack-repo]
-        name=SaltStack repo for RHEL/CentOS {{ os_major_release }}
+        name=SaltStack repo for RHEL/CentOS $releasever
         baseurl=https://repo.saltstack.com/{{ repo_path }}
         enabled=1
         gpgcheck=1
