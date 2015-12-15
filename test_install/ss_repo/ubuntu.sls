@@ -1,7 +1,7 @@
 {% set os_ = salt['grains.get']('os', '') %}
 {% set os_arch = salt['grains.get']('osarch', '') %}
 {% set os_release = salt['grains.get']('osrelease', '') %}
-{% set os_major_release = salt['grains.get']('osmajorrelease', '') %}
+{% set os_major_release = os_release.split('.')[0] %}
 {% set os_code_name = salt['grains.get']('oscodename', '')  %}
 
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
@@ -24,16 +24,16 @@
 
 {% set dev = 'dev/' if salt['pillar.get']('dev') else '' %}
 {% if pillar.get('new_repo') %}
-  {% set repo_path = '{0}apt/debian/{1}/{2}'.format(dev, os_major_release, branch) %}
+  {% set repo_path = '{0}apt/ubuntu/{1}/{2}/{3}'.format(dev, os_release, os_arch, branch) %}
 {% else %}
-  {% set repo_path = '{0}apt/debian/{1}'.format(dev, branch) %}
+  {% set repo_path = '{0}apt/ubuntu/ubuntu{1}/{2}'.format(dev, os_major_release, branch) %}
 {% endif %}
 {% set repo_key = 'SALTSTACK-GPG-KEY.pub' %}
 
 
 get-key:
   cmd.run:
-    - name: wget -O - https://repo.saltstack.com/apt/debian/{{ branch }}/{{ repo_key }} | apt-key add -
+    - name: wget -O - https://repo.saltstack.com/{{ repo_path }}/{{ repo_key }} | apt-key add -
 
 add-repository:
   file.append:
