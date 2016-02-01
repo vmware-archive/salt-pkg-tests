@@ -22,8 +22,10 @@
   {% set pkgs = versioned_pkgs %}
 {% endif %}
 
-{% set dev = 'dev/' if salt['pillar.get']('dev') else '' %}
-{% if pillar.get('new_repo') %}
+{% set dev = salt['pillar.get']('dev', '') %}
+{% set dev = dev + '/' if dev else '' %}
+
+{% if pillar.get('new_repo', True) %}
   {% set repo_path = '{0}apt/debian/{1}/{2}/{3}'.format(dev, os_major_release, os_arch, branch) %}
 {% else %}
   {% set repo_path = '{0}apt/debian/{1}'.format(dev, branch) %}
