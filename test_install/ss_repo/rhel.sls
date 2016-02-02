@@ -19,69 +19,40 @@
   {% for pkg in pkgs %}
     {% do versioned_pkgs.append(pkg + '-' + salt_version) %}
   {% endfor %}
-  {% set pkgs = versioned_pkgs %}
 {% endif %}
 
 {% set dev = salt['pillar.get']('dev', '') %}
 {% set dev = dev + '/' if dev else '' %}
 
-{% if pillar.get('new_repo', True) %}
-  {% set repo_path = '{0}yum/redhat/{1}/{2}/{3}'.format(dev, os_major_release, os_arch, branch) %}
-{% else %}
-  {% set repo_path = '{0}yum/rhel{1}'.format(dev, os_major_release) %}
-{% endif %}
-{% set repo_key = 'SALTSTACK-EL5-GPG-KEY.pub' if on_rhel_5 else 'SALTSTACK-GPG-KEY.pub' %}
+{% set repo_pkg = 'salt-repo-{0}.el{1}.noarch.rpm'.format(branch, os_major_release) %}
+{% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}'.format(dev, repo_pkg) %}
 
 
-get-key:
+add-repo:
   cmd.run:
     {% if on_rhel_5 %}
-    - name: wget https://repo.saltstack.com/{{ repo_path }}/{{ repo_key }} ; rpm --import {{ repo_key }} ; rm -f {{ repo_key }}
+    - name: wget {{ repo_pkg_url }} ; rpm -iv {{ repo_pkg }} ; rm -f {{ repo_pkg }}
     {% else %}
-    - name: rpm --import https://repo.saltstack.com/{{ repo_path }}/{{ repo_key }}
+    - name: rpm -iv install {{ repo_pkg_url }}
     {% endif %}
-
-add-repository:
-  file.managed:
-    - name: /etc/yum.repos.d/saltstack.repo
-    - makedirs: True
-    - contents: |
-        [saltstack-repo]
-        name=SaltStack repo for RHEL/CentOS $releasever
-        baseurl=https://repo.saltstack.com/{{ repo_path }}
-        enabled=1
-        gpgcheck=1
-        gpgkey=http://repo.saltstack.com/yum/rhel{{ os_major_release }}/{{ repo_key }}
-    - require:
-      - cmd: get-key
+    - unless:
+      - ls /etc/yum.repos.d/salt-{{ branch }}.repo
 
 update-package-database:
   module.run:
     - name: pkg.refresh_db
     - require:
-      - file: add-repository
-
-update-package-database-backup:
-  cmd.run:
-    - name: yum -y makecache
-    - onfail:
-      - module: update-package-database
-
-upgrade-packages:
-  pkg.uptodate:
-    - name: uptodate
-    - require:
-      - module: update-package-database
+      - cmd: add-repo
 
 install-salt:
   pkg.installed:
-    - name: salt-pkgs
-    - pkgs: {{ pkgs }}
+    - names: {{ pkgs }}
+    - version: {{ salt_version }}
     - require:
-      - pkg: upgrade-packages
+      - module: update-package-database
 
 install-salt-backup:
   cmd.run:
-    - name: yum -y install {{ pkgs | join(' ') }}
+    - name: yum -y install {{ versioned_pkgs | join(' ') }}
     - onfail:
       - pkg: install-salt
