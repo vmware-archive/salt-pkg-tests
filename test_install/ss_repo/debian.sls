@@ -19,54 +19,35 @@
   {% for pkg in pkgs %}
     {% do versioned_pkgs.append(pkg + '=' + salt_version + '+ds-' + pkg_version) %}
   {% endfor %}
-  {% set pkgs = versioned_pkgs %}
 {% endif %}
 
 {% set dev = salt['pillar.get']('dev', '') %}
 {% set dev = dev + '/' if dev else '' %}
 
-{% if pillar.get('new_repo', True) %}
-  {% set repo_path = '{0}apt/debian/{1}/{2}/{3}'.format(dev, os_major_release, os_arch, branch) %}
-{% else %}
-  {% set repo_path = '{0}apt/debian/{1}'.format(dev, branch) %}
-{% endif %}
-{% set repo_key = 'SALTSTACK-GPG-KEY.pub' %}
+{% set repo_path = '{0}apt/debian/{1}/{2}/{3}'.format(dev, os_major_release, os_arch, branch) %}
 
 
-get-key:
-  cmd.run:
-    - name: wget -O - https://repo.saltstack.com/{{ repo_path }}/{{ repo_key }} | apt-key add -
-
-add-repository:
-  file.append:
-    - name: /etc/apt/sources.list
-    - text: |
-
-        deb http://repo.saltstack.com/{{ repo_path }} {{ os_code_name }} main
-    - require:
-      - cmd: get-key
+add-repo:
+  pkgrepo.managed:
+    - name: deb http://repo.saltstack.com/{{ repo_path }} {{ os_code_name }} main
+    - file: /etc/apt/sources.list.d/saltstack.list
+    - key_url: https://repo.saltstack.com/{{ repo_path }}/SALTSTACK-GPG-KEY.pub
 
 update-package-database:
   module.run:
     - name: pkg.refresh_db
     - require:
-      - file: add-repository
-
-upgrade-packages:
-  pkg.uptodate:
-    - name: uptodate
-    - require:
-      - module: update-package-database
+      - pkgrepo: add-repo
 
 install-salt:
   pkg.installed:
-    - name: salt-pkgs
-    - pkgs: {{ pkgs }}
+    - names: {{ pkgs }}
+    - version: {{ salt_version }}
     - require:
-      - pkg: upgrade-packages
+      - module: update-package-database
 
 install-salt-backup:
   cmd.run:
-    - name: aptitude -y install {{ pkgs | join(' ') }}
+    - name: aptitude -y install {{ versioned_pkgs | join(' ') }}
     - onfail:
       - pkg: install-salt
