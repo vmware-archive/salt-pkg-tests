@@ -1,0 +1,50 @@
+{# Platform information #}
+{% set os = grains.get('os', '') %}
+{% set os_family = grains.get('os_family', '')  %}
+{% set os_release = grains.get('osrelease', '') %}
+{% set os_major_release = grains.get('osmajorrelease', '') %}
+{% set os_code_name = grains.get('oscodename', '')  %}
+{% set os_arch = grains.get('osarch', '') %}
+
+{# Shorthand for specific platforms #}
+{% set on_rhel_5 = True if os_family == 'RedHat' and os_major_release == '5' else False %}
+{% set on_fedora = os == 'Fedora' %}
+
+{# Package set information: may need to be overridden for repos having nonstandard package sets #}
+{% set salt_version = pillar.get('salt_version', '') %}
+{% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
+
+{# Create a versioned package set to work around pkg.installed bugs #}
+{% set version_token = '=' if os_family == 'Debian' else '-' %}
+{% set versioned_pkgs = [] %}
+{% if salt_version %}
+  {% for pkg in pkgs %}
+    {% do versioned_pkgs.append(pkg + version_token + salt_version) %}
+  {% endfor %}
+{% endif %}
+
+{# Used for specifying a 'dev' or 'staging' SaltStack repository #}
+{% set dev = pillar.get('dev', '') %}
+{% set dev = dev + '/' if dev else '' %}
+
+{# Enable installing from EPEL testing #}
+{% set testing = pillar.get('testing', False) %}
+
+{# Allow explicitly specifying source repository SLS file with a pillar #}
+{% set pkg_repo = pillar.get('pkg_repo', '') %}
+
+{# Indicate that a SaltStack repository should be used #}
+{% set use_saltstack = pillar.get('saltstack', False) %}
+
+{# Whether to use a repository package if available to setup the repo and key #}
+{% set use_repo_pkg = pillar.get('repo_pkg', False) %}
+
+{# When using SaltStack repos, decide whether to use the 'latest' repo #}
+{% set use_latest = pillar.get('latest', False) %}
+{% set repo_version = 'latest' if use_latest else salt_version %}
+
+{# Set minion ID used for master<->local minion testing #}
+{% set minion_id = '{0}'.format(grains.get('id')) %}
+
+{# Smoke test the presence of these utilities #}
+{% set utils = ['salt', 'salt-api', 'salt-call', 'salt-cloud', 'salt-cp', 'salt-key', 'salt-master', 'salt-minion', 'salt-proxy', 'salt-run', 'salt-ssh', 'salt-syndic', 'salt-unity', 'spm'] %}
