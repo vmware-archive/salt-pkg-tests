@@ -1,14 +1,13 @@
-{% set salt_version = pillar.get('salt_version', '') %}
-{% set minion_id = '{0}-{1}'.format(grains.get('id'), salt_version) %}
+{# Import global parameters that source from grains and pillars #}
+{% import 'params.jinja' as params %}
 
-{% set utils = ['salt', 'salt-api', 'salt-call', 'salt-cloud', 'salt-cp', 'salt-key', 'salt-master', 'salt-minion', 'salt-proxy', 'salt-run', 'salt-ssh', 'salt-syndic', 'salt-unity', 'spm'] %}
 
-# remember that the top level cmd.run statements here are instructions to the
-# salt-ssh minion, not the salt actually being tested
+# The top level cmd.run statements here are instructions to the salt-ssh minion,
+# not the salt being tested
 utils_installed:
   cmd.run:
     - names:
-      {% for util in utils %}
+      {% for util in params.utils %}
       - '{{ util }} --help 1> /dev/null ; ( exit $? )'
       {% endfor %}
 
@@ -20,32 +19,32 @@ versions:
   cmd.run:
     - names:
       - salt --versions-report
-      - salt {{ minion_id }} test.versions_report
+      - salt {{ params.minion_id }} test.versions_report
 
 grains:
   cmd.run:
     - names:
-      - salt {{ minion_id }} grains.item os
-      - salt {{ minion_id }} grains.item pythonversion
-      - salt {{ minion_id }} grains.setval key val
+      - salt {{ params.minion_id }} grains.item os
+      - salt {{ params.minion_id }} grains.item pythonversion
+      - salt {{ params.minion_id }} grains.setval key val
 
 pillar:
   cmd.run:
     - names:
-      - salt {{ minion_id }} pillar.items
+      - salt {{ params.minion_id }} pillar.items
 
 output:
   cmd.run:
     - names:
-      - salt --output=yaml {{ minion_id }} test.fib 7
-      - salt --output=json {{ minion_id }} test.fib 7
+      - salt --output=yaml {{ params.minion_id }} test.fib 7
+      - salt --output=json {{ params.minion_id }} test.fib 7
 
 exec:
   cmd.run:
     - names:
-      - salt {{ minion_id }} cmd.run 'ls -lah /'
-      - salt {{ minion_id }} user.list_users
-      - salt {{ minion_id }} network.arp
+      - salt {{ params.minion_id }} cmd.run 'ls -lah /'
+      - salt {{ params.minion_id }} user.list_users
+      - salt {{ params.minion_id }} network.arp
 
 state_file:
   file.managed:
@@ -63,6 +62,6 @@ state_file:
 state:
   cmd.run:
     - names:
-      - salt {{ minion_id }} state.sls states
+      - salt {{ params.minion_id }} state.sls states
     - require:
       - file: state_file
