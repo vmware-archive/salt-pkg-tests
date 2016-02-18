@@ -1,5 +1,5 @@
-{% set salt_version = pillar.get('salt_version', '') %}
-{% set minion_id = '{0}-{1}'.format(grains.get('id'), salt_version) %}
+{# Import global parameters that source from grains and pillars #}
+{% import 'params.jinja' as params %}
 
 
 disable_services:
@@ -25,7 +25,7 @@ minion_config:
     - name: /etc/salt/minion
     - contents: |
         master: localhost
-        id: {{ minion_id }}
+        id: {{ params.minion_id }}
 
 enable_services:
 # this doesn't seem to be working
@@ -50,6 +50,6 @@ wait_for_key:
 
 accept_key:
   cmd.run:
-    - name: 'salt-key -ya {{ minion_id }}'
+    - name: 'salt-key -ya {{ params.minion_id }}'
     - require:
       - cmd: wait_for_key
