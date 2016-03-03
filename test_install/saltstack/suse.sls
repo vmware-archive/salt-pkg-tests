@@ -1,18 +1,21 @@
 {# Import global parameters that source from grains and pillars #}
 {% import 'params.jinja' as params %}
 
-{% set salt_version = salt['pillar.get']('salt_version', '') %}
+{% set suse13 = 'openSUSE 13.2' %}
+{% set suseleap = 'openSUSE Leap 42.1' %}
+{% set sles12 = 'SUSE Linux Enterprise Server 12' %}
+{% set sles11 = 'SUSE Linux Enterprise Server 11' %}
 
 {# Determine Suse_Version #}
-{% set suse_version = params.os + params.os_release %}
-{% if suse_version == 'openSUSE13.1' %}
+{% set suse_version = params.os_code_name %}
+{% if suse13 in suse_version %}
   {% set suse_version = 'openSUSE_13.2' %}
-{% elif suse_version == 'SUSE11.4' %}
-  {% set suse_version = 'SLE_11_SP4' %}
-{% elif suse_version == 'SUSE12.1' %}
-  {% set suse_version = 'SLE_12' %}
-{% elif suse_version == 'openSUSE Leap42.1' %}
+{% elif suseleap in suse_version %}
   {% set suse_version = 'openSUSE_Leap_42.1' %}
+{% elif sles11 in suse_version %}
+  {% set suse_version = 'SLE_11_SP4' %}
+{% elif sles12 in suse_version %}
+  {% set suse_version = 'SLE_12' %}
 {% endif %}
 
 {# Paramters used with repo package install #}
