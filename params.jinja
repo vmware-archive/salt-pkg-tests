@@ -13,6 +13,8 @@
 {# Package set information: may need to be overridden for repos having nonstandard package sets #}
 {% set salt_version = pillar.get('salt_version', '') %}
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
+{# if there is a patch to a package you can use pkg_version to specify a different package version. ie 2015.8.8.2 #}
+{% set pkg_version = '-' + pillar.get('pkg_version', '') %}
 
 {# Create a versioned package set to work around pkg.installed bugs #}
 {% set version_token = '=' if os_family == 'Debian' else '-' %}
