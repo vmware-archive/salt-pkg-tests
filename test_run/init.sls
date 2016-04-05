@@ -65,3 +65,11 @@ state:
       - salt {{ params.minion_id }} state.sls states
     - require:
       - file: state_file
+
+salt-call:
+  cmd.run:
+    - names:
+      - salt-call --local sys.doc none
+      - salt-call --local state.apply states
+      - salt-call --local sys.doc aliases.list_aliases
+
