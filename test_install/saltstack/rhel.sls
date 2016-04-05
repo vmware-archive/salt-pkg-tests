@@ -3,7 +3,7 @@
 
 {# Parameters used with repo package install #}
 {% set branch = params.salt_version.rsplit('.', 1)[0] %}
-{% set repo_pkg = 'salt-repo-{0}{1}.el{2}.noarch.rpm'.format(branch, params.pkg_version, params.os_major_release ) %}
+{% set repo_pkg = 'salt-repo-{0}{1}.el{2}.noarch.rpm'.format(branch, params.repo_pkg_version, params.os_major_release ) %}
 {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}'.format(params.dev, repo_pkg) %}
 
 {# Parameters used with pkgrepo.managed install #}
