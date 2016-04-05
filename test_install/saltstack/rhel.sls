@@ -3,7 +3,7 @@
 
 {# Parameters used with repo package install #}
 {% set branch = params.salt_version.rsplit('.', 1)[0] %}
-{% set repo_pkg = 'salt-repo-{0}.el{1}.noarch.rpm'.format(branch, params.os_major_release) %}
+{% set repo_pkg = 'salt-repo-{0}{1}.el{2}.noarch.rpm'.format(branch, params.repo_pkg_version, params.os_major_release ) %}
 {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}'.format(params.dev, repo_pkg) %}
 
 {# Parameters used with pkgrepo.managed install #}
@@ -24,10 +24,17 @@ add-repo:
     {% if params.on_rhel_5 %}
     - name: wget {{ repo_pkg_url }} ; rpm -iv {{ repo_pkg }} ; rm -f {{ repo_pkg }}
     {% else %}
-    - name: rpm -iv {{ repo_pkg_url }}
+    - name: yum install -y {{ repo_pkg_url }}
     {% endif %}
     - unless:
       - rpm -q {{ repo_pkg.split('.rpm')[0] }}
+replace_repo_file:
+  file.replace:
+    - name: /etc/yum.repos.d/salt-{{ branch }}.repo
+    - pattern: 'repo.saltstack.com/yum/redhat'
+    - repl: 'repo.saltstack.com/{{ params.dev }}yum/redhat'
+    - require:
+      - cmd: add-repo
 {% else %}
 add-repo:
   pkgrepo.managed:
