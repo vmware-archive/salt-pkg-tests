@@ -12,9 +12,9 @@
 {% set key_url = '{0}/SALTSTACK-GPG-KEY.pub'.format(repo_url) %}
 
 {% if params.on_deb_7 %}
-{% set repo_url = 'http://' + repo_url.split('https://')[1] %}
+{% set key_url = 'http://' + repo_url.split('https://')[1] %}
 {% endif %}
-{% set key_url = 'http://' + key_url.split('https://')[1] %}
+{% set repo_url = 'http://' + key_url.split('https://')[1] %}
 
 install-https-transport:
   pkg.installed:
