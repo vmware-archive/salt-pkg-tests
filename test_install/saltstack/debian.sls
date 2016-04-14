@@ -11,8 +11,9 @@
 
 {% set key_url = '{0}/SALTSTACK-GPG-KEY.pub'.format(repo_url) %}
 
-{# workaround until https://github.com/saltstack/salt/issues/27511 is fixed #}
+{% if params.on_deb_7 %}
 {% set repo_url = 'http://' + repo_url.split('https://')[1] %}
+{% endif %}
 {% set key_url = 'http://' + key_url.split('https://')[1] %}
 
 install-https-transport:
