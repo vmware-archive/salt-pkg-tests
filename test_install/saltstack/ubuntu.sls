@@ -34,6 +34,19 @@ update-package-database:
     - require:
       - pkgrepo: add-repo
 
+{% if params.upgrade %}
+upgrade-salt:
+  cmd.run:
+    - name: apt-get upgrade -y -o Dpkg::Options::="--force-confold" {{ params.pkgs | join(' ') }}
+
+restart-salt:
+  cmd.run:
+    - names:
+      - service salt-master restart
+      - service salt-minion restart
+    - require:
+      - cmd: upgrade-salt
+{% else %}
 install-salt:
   pkg.installed:
     - names: {{ params.pkgs }}
@@ -46,3 +59,4 @@ install-salt-backup:
     - name: aptitude -y install {{ params.versioned_pkgs | join(' ') }}
     - onfail:
       - pkg: install-salt
+{% endif %}
