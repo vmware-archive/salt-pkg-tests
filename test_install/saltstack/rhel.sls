@@ -55,6 +55,19 @@ update-package-database:
       - pkgrepo: add-repo
       {% endif %}
 
+{% if params.upgrade %}
+upgrade-salt:
+  cmd.run:
+    - name: yum -y update {{ params.pkgs | join(' ') }}
+
+restart-salt:
+  cmd.run:
+    - names:
+      - service salt-master restart
+      - service salt-minion restart
+    - require:
+      - cmd: upgrade-salt
+{% else %}
 install-salt:
   pkg.installed:
     - names: {{ params.pkgs }}
@@ -67,3 +80,4 @@ install-salt-backup:
     - name: yum -y install {{ params.versioned_pkgs | join(' ') }}
     - onfail:
       - pkg: install-salt
+{% endif %}
