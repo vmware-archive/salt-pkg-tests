@@ -11,6 +11,11 @@
 
 {% set key_url = '{0}/SALTSTACK-GPG-KEY.pub'.format(repo_url) %}
 
+{% if params.os == 'Raspbian' %}
+install-python-apt:
+  pkg.installed:
+    - name: python-apt
+{% endif %}
 
 install-https-transport:
   pkg.installed:
