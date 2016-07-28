@@ -13,19 +13,13 @@
 {% endif %}
 
 {# Parameters used with pkgrepo.managed install #}
+{% set release = 6 if params.on_amazon else '$releasever' %}
+
 {% if params.use_latest %}
-  {% if params.on_amazon %}
-    {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/6/$basearch/latest'.format(params.dev) %}
-  {% else %}
-    {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/$releasever/$basearch/latest'.format(params.dev) %}
-  {% endif %}
+  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}/$basearch/latest'.format(params.dev, release) %}
 {% else %}
-  {% if params.on_amazon %}
-    {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/6/$basearch/archive/{1}' %}
-  {% else %}
-    {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/$releasever/$basearch/archive/{1}' %}
-  {% endif %}
-  {% set repo_url = repo_url.format(params.dev, params.salt_version) %}
+  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}/$basearch/archive/{2}' %}
+  {% set repo_url = repo_url.format(params.dev, release, params.salt_version) %}
 {% endif %}
 
 {% set key_name = 'SALTSTACK-EL5-GPG-KEY.pub' if params.on_rhel_5 else 'SALTSTACK-GPG-KEY.pub' %} 
