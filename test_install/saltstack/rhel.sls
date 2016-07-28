@@ -3,14 +3,28 @@
 
 {# Parameters used with repo package install #}
 {% set branch = params.salt_version.rsplit('.', 1)[0] %}
-{% set repo_pkg = 'salt-repo-{0}{1}.el{2}.noarch.rpm'.format(branch, params.repo_pkg_version, params.os_major_release ) %}
-{% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}'.format(params.dev, repo_pkg) %}
+
+{% if params.on_amazon %}
+  {% set repo_pkg = 'salt-amzn-repo-{0}{1}.rpm'.format(branch, params.repo_pkg_version) %}
+  {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/amazon/{1}'.format(params.dev, repo_pkg) %}
+{% else %}
+  {% set repo_pkg = 'salt-repo-{0}{1}.el{2}.noarch.rpm'.format(branch, params.repo_pkg_version, params.os_major_release ) %}
+  {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}'.format(params.dev, repo_pkg) %}
+{% endif %}
 
 {# Parameters used with pkgrepo.managed install #}
 {% if params.use_latest %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/$releasever/$basearch/latest'.format(params.dev) %}
+  {% if params.on_amazon %}
+    {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/6/$basearch/latest'.format(params.dev) %}
+  {% else %}
+    {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/$releasever/$basearch/latest'.format(params.dev) %}
+  {% endif %}
 {% else %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/$releasever/$basearch/archive/{1}' %}
+  {% if params.on_amazon %}
+    {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/6/$basearch/archive/{1}' %}
+  {% else %}
+    {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/$releasever/$basearch/archive/{1}' %}
+  {% endif %}
   {% set repo_url = repo_url.format(params.dev, params.salt_version) %}
 {% endif %}
 
@@ -59,7 +73,6 @@ update-package-database:
 upgrade-salt:
   cmd.run:
     - name: yum -y update {{ params.pkgs | join(' ') }}
-
 restart-salt:
   cmd.run:
     - names:
@@ -74,7 +87,6 @@ install-salt:
     - version: {{ params.salt_version }}
     - require:
       - module: update-package-database
-
 install-salt-backup:
   cmd.run:
     - name: yum -y install {{ params.versioned_pkgs | join(' ') }}
