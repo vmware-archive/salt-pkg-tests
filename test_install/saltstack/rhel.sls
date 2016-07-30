@@ -3,15 +3,23 @@
 
 {# Parameters used with repo package install #}
 {% set branch = params.salt_version.rsplit('.', 1)[0] %}
-{% set repo_pkg = 'salt-repo-{0}{1}.el{2}.noarch.rpm'.format(branch, params.repo_pkg_version, params.os_major_release ) %}
-{% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}'.format(params.dev, repo_pkg) %}
+
+{% if params.on_amazon %}
+  {% set repo_pkg = 'salt-amzn-repo-{0}{1}.rpm'.format(branch, params.repo_pkg_version) %}
+  {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/amazon/{1}'.format(params.dev, repo_pkg) %}
+{% else %}
+  {% set repo_pkg = 'salt-repo-{0}{1}.el{2}.noarch.rpm'.format(branch, params.repo_pkg_version, params.os_major_release ) %}
+  {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}'.format(params.dev, repo_pkg) %}
+{% endif %}
 
 {# Parameters used with pkgrepo.managed install #}
+{% set release = 6 if params.on_amazon else '$releasever' %}
+
 {% if params.use_latest %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/$releasever/$basearch/latest'.format(params.dev) %}
+  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}/$basearch/latest'.format(params.dev, release) %}
 {% else %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/$releasever/$basearch/archive/{1}' %}
-  {% set repo_url = repo_url.format(params.dev, params.salt_version) %}
+  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}/$basearch/archive/{2}' %}
+  {% set repo_url = repo_url.format(params.dev, release, params.salt_version) %}
 {% endif %}
 
 {% set key_name = 'SALTSTACK-EL5-GPG-KEY.pub' if params.on_rhel_5 else 'SALTSTACK-GPG-KEY.pub' %} 
@@ -59,7 +67,6 @@ update-package-database:
 upgrade-salt:
   cmd.run:
     - name: yum -y update {{ params.pkgs | join(' ') }}
-
 restart-salt:
   cmd.run:
     - names:
@@ -74,7 +81,6 @@ install-salt:
     - version: {{ params.salt_version }}
     - require:
       - module: update-package-database
-
 install-salt-backup:
   cmd.run:
     - name: yum -y install {{ params.versioned_pkgs | join(' ') }}
