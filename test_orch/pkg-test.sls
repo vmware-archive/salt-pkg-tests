@@ -61,9 +61,7 @@ verify_host_{{ action }}_{{ host }}:
     - arg:
       - salt-ssh {{ host }} -i test.ping
 {% endfor %}
-{%- endmacro %} 
-
-
+{%- endmacro %}
 
 
 {% macro setup_salt(salt_version, action='None', upgrade_val='False') -%}
