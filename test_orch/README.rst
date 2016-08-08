@@ -11,7 +11,8 @@ using this orchestration sls file.
    values. The following is an example of some pillar data:
 
        salt_version: 2016.3.2
-       upgrade_salt_version: 2016.3.1 dev: staging
+       upgrade_salt_version: 2016.3.1
+       dev: staging
        orch_master: pkg-test-minion
        username: ch3ll
        upgrade: True
