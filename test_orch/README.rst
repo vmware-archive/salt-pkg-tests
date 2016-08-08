@@ -17,7 +17,6 @@ using this orchestration sls file.
        upgrade: True
        clean: True
        latest: False
-       #repo_pkg_version: '1'
        cloud_profile:
          - linode_ubuntu12
          - linode_ubuntu14
