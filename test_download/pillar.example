@@ -1,0 +1,99 @@
+os:
+  rpi:
+    tag: '8'
+    codename: jessie
+    distro: debian
+    osflavor: debian
+    test_with_docker: False
+  ubuntu14:
+    tag: '14.04'
+    codename: trusty
+    distro: ubuntu
+    osflavor: debian
+    test_with_docker: True
+    os_version: '14.04'
+  ubuntu12:
+    tag: '12.04'
+    codename: precise
+    distro: ubuntu
+    osflavor: debian
+    test_with_docker: True
+    os_version: '12.04'
+  ubuntu16:
+    tag: '16.04'
+    codename: xenial
+    distro: ubuntu
+    osflavor: debian
+    test_with_docker: True
+    os_version: '16.04'
+  debian8:
+    tag: '8'
+    codename: jessie
+    distro: debian
+    osflavor: debian
+    test_with_docker: True
+    os_version: '8'
+  centos7:
+    tag: '7'
+    codename: '7.2'
+    distro: centos
+    osflavor: redhat
+    test_with_docker: True
+    os_version: '7'
+  centos6:
+    tag: '6'
+    codename: '6'
+    distro: centos
+    osflavor: redhat
+    test_with_docker: True
+    os_version: '6'
+  centos5:
+    tag: '5'
+    codename: '5'
+    distro: centos
+    osflavor: redhat
+    test_with_docker: True
+    os_version: '5'
+  centosredhat5:
+    tag: 'latest'
+    codename: '5'
+    distro: 'alanfx/rhel5'
+    osflavor: redhat
+    test_with_docker: True
+    os_version: '5'
+  centosredhat6:
+    tag: 'latest' #    codename: '6'
+    distro: 'prophetyang/redhat6-build'
+    osflavor: redhat
+    test_with_docker: True
+    os_version: '6'
+  centosredhat7:
+    tag: 'latest'
+    codename: '7'
+    distro: 'thezxm/redhat7'
+    osflavor: redhat
+    test_with_docker: True
+    os_version: '6'
+ macosx:
+   tag: '5'
+   codename: '5'
+   distro: mac
+   osflavor: osx
+   test_with_docker: False
+   os_version: '5'
+  windows:
+    tag: '5'
+    codename: '5'
+    distro: mac
+    osflavor: windows
+    test_with_docker: False
+    os_version: '5'
+
+install_type:
+  - latest
+  - major
+  - minor
+
+staging: False
+salt_version: 2016.3.3
+repo_pkg_vr: '1'
