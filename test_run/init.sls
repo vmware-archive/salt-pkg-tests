@@ -4,6 +4,15 @@
 
 # The top level cmd.run statements here are instructions to the salt-ssh minion,
 # not the salt being tested
+{% if params.on_smartos %}
+{% set update_path = salt['environ.get']('PATH', '') + ':/opt/salt/bin/' %}
+add_saltkey_path:
+   environ.setenv:
+     - name: PATH
+     - value: {{ update_path }}
+     - update_minion: True
+{% endif %}
+
 utils_installed:
   cmd.run:
     - names:
@@ -48,7 +57,7 @@ exec:
 
 state_file:
   file.managed:
-    - name: /srv/salt/states.sls
+    - name: {{ params.file_roots }}/states.sls
     - makedirs: True
     - contents: |
         update:
