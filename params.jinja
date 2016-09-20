@@ -9,8 +9,8 @@
 {# Shorthand for specific platforms #}
 {% set on_rhel_5 = True if os_family == 'RedHat' and os_major_release == '5' else False %}
 {% set on_deb_7 = True if os_family == 'Debian' and os_major_release == '7' else False %}
-{% set on_amazon = True if os == 'Amazon' %}
 {% set on_smartos = True if os == 'SmartOS' else False %}
+{% set on_amazon = True if os == 'Amazon' else False %}
 {% set on_fedora = os == 'Fedora' %}
 
 {# Package set information: may need to be overridden for repos having nonstandard package sets #}

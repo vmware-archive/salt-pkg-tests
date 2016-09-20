@@ -22,6 +22,10 @@ install-python-apt:
     - name: python-apt
 {% endif %}
 
+pre_update-package-database:
+  module.run:
+    - name: pkg.refresh_db
+
 install-https-transport:
   pkg.installed:
     - name: apt-transport-https
@@ -43,7 +47,7 @@ update-package-database:
 {% if params.upgrade %}
 upgrade-salt:
   cmd.run:
-    - name: apt-get upgrade -y -o Dpkg::Options::="--force-confold" {{ params.pkgs | join(' ') }}
+    - name: apt-get install -y --only-upgrade {{ params.pkgs | join(' ') }}
 
 restart-salt:
   cmd.run:

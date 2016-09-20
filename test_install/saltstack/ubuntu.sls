@@ -15,6 +15,11 @@
 {% set repo_url = 'http://' + repo_url.split('https://')[1] %}
 {% set key_url = 'http://' + key_url.split('https://')[1] %}
 
+{% if params.os_release == '16.04' %}
+install-python-apt:
+  pkg.installed:
+    - name: python-apt
+{% endif %}
 
 install-https-transport:
   pkg.installed:
@@ -37,7 +42,7 @@ update-package-database:
 {% if params.upgrade %}
 upgrade-salt:
   cmd.run:
-    - name: apt-get upgrade -y -o Dpkg::Options::="--force-confold" {{ params.pkgs | join(' ') }}
+    - name: apt-get install -y --only-upgrade {{ params.pkgs | join(' ') }}
 
 restart-salt:
   cmd.run:
@@ -56,7 +61,7 @@ install-salt:
 
 install-salt-backup:
   cmd.run:
-    - name: aptitude -y install {{ params.versioned_pkgs | join(' ') }}
+    - name: apt-get -y install {{ params.pkgs | join(' ') }}
     - onfail:
       - pkg: install-salt
 {% endif %}
