@@ -60,3 +60,18 @@ using this orchestration sls file.
 3. Now you are ready to run the orchestration file. In order to do this you simply
    need to run: 'salt-run state.orchestrate test_orch.pkg-test'. This will run the
    tests and you will see the results in the end of the run.
+
+
+====================
+Testing Windows PKGs
+====================
+
+1. Need to add the following to /etc/salt/master:
+   reactor:
+     - 'salt/cloud/qapkgtest-master-linux/deploying':
+           - /srv/reactor/win_reactor.sls
+
+   TODO: add this as part of the orchestration
+
+2. Need to edit the file: test_orch/states/windowsmap and change the name of the profiles that are implemented in your current architecture
+   TODO: add ability to dynamically add profiles from pillars for all windows profiles

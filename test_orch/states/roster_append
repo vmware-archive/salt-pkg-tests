@@ -1,0 +1,6 @@
+qapkgtest-master-test:
+    host: {{ salt['pillar.get']('host_ip', '') }}
+    user: ec2-user
+    priv: /root/.ssh/amazon
+    sudo: true
+    tty: true
