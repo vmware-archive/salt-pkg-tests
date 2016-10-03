@@ -1,0 +1,8 @@
+add_ip_to_roster_sls:
+  local.state.apply:
+    - tgt: {{ salt['pillar.get']('orch_master', '') }}
+    - arg:
+      - test_orch.states.add_ip_roster
+    - kwarg:
+        pillar:
+          host_ip: {{ '{{' }} data.kwargs.host {{ '}}' }} 
