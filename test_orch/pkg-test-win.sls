@@ -74,4 +74,5 @@ test_run_{{ action }}:
 {% if clean %}
 {{ create_vm(action='clean') }}
 {{ setup_salt(salt_version, action='clean') }}
+{{ destroy_vm() }}
 {% endif %}
