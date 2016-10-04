@@ -2,6 +2,6 @@ ec2_centos_7:
   - qapkgtest-master-linux:
       make_master: True
       script_args: -M -P git v{{ salt['pillar.get']('salt_version', '') }}
-aws_win_2012r2_64:
-  - qapkgtest-win2012_2:
+aws_win_2008:
+  - qapkgtest-win2008:
       win_installer: /etc/salt/windows/Salt-Minion-{{ salt['pillar.get']('salt_version', '') }}-AMD64-Setup.exe

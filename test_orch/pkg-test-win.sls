@@ -21,7 +21,7 @@ destroy_linux_master_win_minion:
 {% endmacro %}
 
 
-{% macro create_vm(action='None') -%}
+{% macro create_vm(salt_version, action='None') -%}
 setup_win_on_master:
   salt.state:
     - tgt: {{ orch_master }}
@@ -58,7 +58,7 @@ verify_ssh_hosts:
       - salt-ssh '*' -i test.ping
 {%- endmacro %} 
 
-{% macro setup_salt(salt_version, action='None', upgrade_val='False') -%}
+{% macro test_run(salt_version, action='None', upgrade_val='False') -%}
 test_run_{{ action }}:
   salt.state:
     - tgt: '*master*' 
@@ -71,8 +71,30 @@ test_run_{{ action }}:
         dev: {{ dev }}
 {%- endmacro %}
 
+{% macro upgrade_salt(salt_version, action='None', upgrade_val='False') -%}
+test_run_{{ action }}:
+  salt.state:
+    - tgt: '*master*' 
+    - tgt_type: glob
+    - ssh: 'true'
+    - sls:
+      - test_orch.states.upgrade_win_minion
+    - pillar:
+        salt_version: {{ salt_version }}
+        dev: {{ dev }}
+{%- endmacro %}
+
+
 {% if clean %}
-{{ create_vm(action='clean') }}
-{{ setup_salt(salt_version, action='clean') }}
+{{ create_vm(salt_version, action='clean') }}
+{{ test_run(salt_version, action='clean') }}
+{{ destroy_vm() }}
+{% endif %}
+
+{% if upgrade %}
+{{ create_vm(upgrade_salt_version, action='upgrade') }}
+{{ test_run(upgrade_salt_version, action='preupgrade') }}
+{{ upgrade_salt(salt_version, action='upgrade') }}
+{{ test_run(salt_version, action='after_upgrade') }}
 {{ destroy_vm() }}
 {% endif %}

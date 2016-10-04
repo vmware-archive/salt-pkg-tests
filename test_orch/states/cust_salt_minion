@@ -1,0 +1,22 @@
+cust_salt_minion:
+  '{{ salt['pillar.get']('salt_version', '') }}':
+    full_name: 'Salt Minion {{ salt['pillar.get']('salt_version', '') }}'
+    {% raw %}
+    {% if grains['cpuarch'] == 'AMD64' %}
+    {% endraw %}
+    installer: 'https://repo.saltstack.com/{{ salt['pillar.get']('dev', '') }}windows/Salt-Minion-{{ salt['pillar.get']('salt_version', '') }}-AMD64-Setup.exe'
+    {% raw %}
+    {% elif grains['cpuarch'] == 'x86' %}
+    {% endraw %}
+    installer: 'https://repo.saltstack.com/{{ salt['pillar.get']('dev', '') }}windows/Salt-Minion-{{ salt['pillar.get']('salt_version', '') }}-x86-Setup.exe'
+    {% raw %}
+    {% endif %}
+    {% endraw %}
+    install_flags: '/S'
+    uninstaller: 'C:\salt\uninst.exe'
+    uninstall_flags: '/S'
+    refresh: true
+    msiexec: False
+    use_scheduler: True
+    locale: en_US
+    reboot: False
