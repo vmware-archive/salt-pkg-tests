@@ -18,6 +18,7 @@ using this orchestration sls file.
        upgrade: True
        clean: True
        latest: False
+       repo: community
        cloud_profile:
          - linode_ubuntu12
          - linode_ubuntu14
@@ -52,6 +53,10 @@ using this orchestration sls file.
          True if you want to test the latest URLs. False if you want to
          test the archive links.
 
+     repo
+         Specifies if you are testing community or saltstack packages.
+         Select community or saltstack, depending on what you are testing.
+         
      cloud_profile:
          A list of the salt-cloud profiles that you want to test.
          As the example shows we will test Ubuntu 12 and 14, which
