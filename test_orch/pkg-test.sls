@@ -8,6 +8,7 @@
 {% set username = salt['pillar.get']('username', '') %}
 {% set upgrade = salt['pillar.get']('upgrade', '') %}
 {% set clean = salt['pillar.get']('clean', '') %}
+{% set repo = salt['pillar.get']('repo', '') %}
 {% set hosts = [] %}
 
 {% macro destroy_vm() -%}
@@ -24,7 +25,6 @@ destroy_{{ host }}:
 
 {% endfor %}
 {% endmacro %}
-
 
 {% macro create_vm(action='None') -%}
 {% for profile in cloud_profile %}
@@ -43,7 +43,7 @@ sleep_{{ action }}_{{ host }}:
     - name: test.sleep
     - tgt: {{ orch_master }}
     - arg:
-      - 120
+      - 240
 
 {% if '5' in host %}
 install_python_{{ action }}:
@@ -70,8 +70,14 @@ test_install_{{ action }}:
     - tgt: {{ hosts }}
     - tgt_type: list
     - ssh: 'true'
+{% if 'opensource' in repo %}
     - sls:
       - test_install.saltstack
+{% endif %}
+{% if 'community' in repo %}
+    - sls:
+      - test_install.community
+{% endif %}
     - pillar:
         salt_version: {{ salt_version }}
         dev: {{ dev }}
