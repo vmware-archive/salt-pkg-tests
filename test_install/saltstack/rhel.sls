@@ -67,6 +67,9 @@ update-package-database:
 upgrade-salt:
   cmd.run:
     - name: yum -y update {{ params.pkgs | join(' ') }}
+
+{% set exists = salt['cmd.run']('pidof systemd') %}
+{% if not exists %}
 restart-salt:
   cmd.run:
     - names:
@@ -74,6 +77,8 @@ restart-salt:
       - service salt-minion restart
     - require:
       - cmd: upgrade-salt
+{% endif %}
+
 {% else %}
 install-salt:
   pkg.installed:
