@@ -55,6 +55,11 @@ exec:
       - salt {{ params.minion_id }} user.list_users
       - salt {{ params.minion_id }} network.arp
 
+systemd_config_check:
+  cmd.script:
+    - name: systemd_check
+    - source: salt://test_run/files/systemd_script.sh
+
 state_file:
   file.managed:
     - name: {{ params.file_roots }}/states.sls
