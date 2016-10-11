@@ -70,7 +70,7 @@ test_install_{{ action }}:
     - tgt: {{ hosts }}
     - tgt_type: list
     - ssh: 'true'
-{% if 'opensource' in repo %}
+{% if 'saltstack' in repo %}
     - sls:
       - test_install.saltstack
 {% endif %}
