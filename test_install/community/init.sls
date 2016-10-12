@@ -23,6 +23,10 @@
 
   {% set pkg_repo = params.pkg_repo or 'suse' %}
 
+{% elif params.os == 'Fedora' %}
+
+  {% set pkg_repo = params.pkg_repo or 'fedora' %}
+
 {% endif %}
 
 # Route into selected SLS file containing the install states
