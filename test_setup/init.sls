@@ -58,7 +58,7 @@ enable_services:
 
 wait_for_key:
   cmd.run:
-    - name: sleep 17
+    - name: sleep 30
     - require:
       - cmd: enable_services
 
