@@ -49,7 +49,7 @@ upgrade-salt:
   cmd.run:
     - name: apt-get install -y -o Dpkg::Options::="--force-confdef" --only-upgrade {{ params.pkgs | join(' ') }}
 
-{% set exists = salt['cmd.run']('pidof systemd') %}
+{% set exists = salt['cmd.run']('pgrep systemd') %}
 {% if not exists %}
 restart-salt:
   cmd.run:
