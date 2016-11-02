@@ -13,7 +13,7 @@ esky_pkg:
     - if_missing: /opt/salt/
 
 run_installer:
-  cmd.script:
-    - name: /opt/salt/install/install.sh
+  cmd.run:
+    - name: sh /opt/salt/install/install.sh
     - require:
       - archive: esky_pkg
