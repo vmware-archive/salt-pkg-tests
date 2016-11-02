@@ -47,7 +47,7 @@ update-package-database:
 {% if params.upgrade %}
 upgrade-salt:
   cmd.run:
-    - name: apt-get install -y --only-upgrade {{ params.pkgs | join(' ') }}
+    - name: apt-get install -y -o Dpkg::Options::="--force-confdef" --only-upgrade {{ params.pkgs | join(' ') }}
 
 {% set exists = salt['cmd.run']('pidof systemd') %}
 {% if not exists %}
