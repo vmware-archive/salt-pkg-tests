@@ -19,7 +19,7 @@ using this orchestration sls file.
        clean: True
        latest: False
        repo: community
-       rc_pkgs_url: 'salt_rc'
+       test_rc_pkgs: True
        cloud_profile:
          - linode_ubuntu12
          - linode_ubuntu14
@@ -38,9 +38,8 @@ using this orchestration sls file.
          another directory where the packages are located.
 
      rc_pkgs_url
-         Specifies the name of the RC packages url if testing rc packages.
-         For example: salt_rc. Leave either blank: '' or do not set if not
-         testing rc packages.
+         True or False. Set True if you are testing RC packages
+         on repo.saltstack.com
 
      orch_master
          the name of the minion on your master
