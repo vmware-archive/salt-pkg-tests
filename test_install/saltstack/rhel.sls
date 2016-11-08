@@ -6,20 +6,20 @@
 
 {% if params.on_amazon %}
   {% set repo_pkg = 'salt-amzn-repo-{0}{1}.rpm'.format(branch, params.repo_pkg_version) %}
-  {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/amazon/{1}'.format(params.dev, repo_pkg) %}
+  {% set repo_pkg_url = 'https://repo.saltstack.com/{0}{1}yum/amazon/{2}'.format(params.dev, params.rc_pkgs_url, repo_pkg) %}
 {% else %}
   {% set repo_pkg = 'salt-repo-{0}{1}.el{2}.noarch.rpm'.format(branch, params.repo_pkg_version, params.os_major_release ) %}
-  {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}'.format(params.dev, repo_pkg) %}
+  {% set repo_pkg_url = 'https://repo.saltstack.com/{0}{1}yum/redhat/{2}'.format(params.dev, params.rc_pkgs_url, repo_pkg) %}
 {% endif %}
 
 {# Parameters used with pkgrepo.managed install #}
 {% set release = 6 if params.on_amazon else '$releasever' %}
 
 {% if params.use_latest %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}/$basearch/latest'.format(params.dev, release) %}
+  {% set repo_url = 'https://repo.saltstack.com/{0}{1}yum/redhat/{2}/$basearch/latest'.format(params.dev, params.rc_pkgs_url, release) %}
 {% else %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}/$basearch/archive/{2}' %}
-  {% set repo_url = repo_url.format(params.dev, release, params.salt_version) %}
+  {% set repo_url = 'https://repo.saltstack.com/{0}{1}yum/redhat/{2}/$basearch/archive/{3}' %}
+  {% set repo_url = repo_url.format(params.dev, params.rc_pkgs_url, release, params.salt_version) %}
 {% endif %}
 
 {% set key_name = 'SALTSTACK-EL5-GPG-KEY.pub' if params.on_rhel_5 else 'SALTSTACK-GPG-KEY.pub' %} 

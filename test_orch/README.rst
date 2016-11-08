@@ -19,6 +19,7 @@ using this orchestration sls file.
        clean: True
        latest: False
        repo: community
+       rc_pkgs_url: 'salt_rc'
        cloud_profile:
          - linode_ubuntu12
          - linode_ubuntu14
@@ -35,6 +36,11 @@ using this orchestration sls file.
      dev
          This specifies whether you are testing staging,testing,dev or
          another directory where the packages are located.
+
+     rc_pkgs_url
+         Specifies the name of the RC packages url if testing rc packages.
+         For example: salt_rc. Leave either blank: '' or do not set if not
+         testing rc packages.
 
      orch_master
          the name of the minion on your master
