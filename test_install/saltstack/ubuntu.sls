@@ -2,11 +2,11 @@
 {% import 'params.jinja' as params %}
 
 {% if params.use_latest %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}apt/ubuntu/{1}/{2}/latest' %}
-  {% set repo_url = repo_url.format(params.dev, params.os_release, params.os_arch) %}
+  {% set repo_url = 'https://repo.saltstack.com/{0}{1}apt/ubuntu/{2}/{3}/latest' %}
+  {% set repo_url = repo_url.format(params.dev, params.rc_pkgs_url, params.os_release, params.os_arch) %}
 {% else %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}apt/ubuntu/{1}/{2}/archive/{3}' %}
-  {% set repo_url = repo_url.format(params.dev, params.os_release, params.os_arch, params.salt_version) %}
+  {% set repo_url = 'https://repo.saltstack.com/{0}{1}apt/ubuntu/{2}/{3}/archive/{4}' %}
+  {% set repo_url = repo_url.format(params.dev, params.rc_pkgs_url, params.os_release, params.os_arch, params.salt_version) %}
 {% endif %}
 
 {% set key_url = '{0}/SALTSTACK-GPG-KEY.pub'.format(repo_url) %}
