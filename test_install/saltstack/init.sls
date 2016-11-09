@@ -7,6 +7,10 @@
 
   {% set pkg_repo = params.pkg_repo or 'rhel' %}
 
+{% elif params.os == 'Amazon' %}
+
+    {% set pkg_repo = params.pkg_repo or 'amazon' %}
+
 {% elif params.os == 'Debian' %}
 
     {% set pkg_repo = params.pkg_repo or 'debian' %}
