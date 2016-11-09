@@ -37,7 +37,7 @@ using this orchestration sls file.
          This specifies whether you are testing staging,testing,dev or
          another directory where the packages are located.
 
-     rc_pkgs_url
+     test_rc_pkgs 
          True or False. Set True if you are testing RC packages
          on repo.saltstack.com
 
