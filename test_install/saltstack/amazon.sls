@@ -4,41 +4,29 @@
 {# Parameters used with repo package install #}
 {% set branch = params.salt_version.rsplit('.', 1)[0] %}
 
-{% if params.on_amazon %}
-  {% set repo_pkg = 'salt-amzn-repo-{0}{1}.rpm'.format(branch, params.repo_pkg_version) %}
+{% if params.use_latest %}
+  {% set repo_url = 'https://repo.saltstack.com/{0}yum/amazon/latest/$basearch/latest'.format(params.dev) %}
+  {% set repo_pkg = 'salt-amzn-repo-{0}{1}.amzn1.noarch.rpm'.format(branch, params.repo_pkg_version) %}
   {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/amazon/{1}'.format(params.dev, repo_pkg) %}
 {% elif params.test_rc_pkgs %}
-  {% set repo_pkg = 'salt-amzn-repo-{0}{1}.rpm'.format(branch, params.repo_pkg_version) %}
+  {% set repo_url = 'https://repo.saltstack.com/{0}salt_rc/yum/amazon/latest/$basearch'.format(params.dev) %}
+  {% set repo_pkg = 'salt-amzn-repo-{0}{1}.amzn1.noarch.rpm'.format(branch, params.repo_pkg_version) %}
   {% set repo_pkg_url = 'https://repo.saltstack.com/{0}salt_rc/yum/amazon/{1}'.format(params.dev, repo_pkg) %}
 {% else %}
-  {% set repo_pkg = 'salt-repo-{0}{1}.el{2}.noarch.rpm'.format(branch, params.repo_pkg_version, params.os_major_release ) %}
-  {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}'.format(params.dev, repo_pkg) %}
+  {% set repo_url = 'https://repo.saltstack.com/{0}yum/amazon/latest/$basearch/archive/{1}' %}
+  {% set repo_url = repo_url.format(params.dev, params.salt_version) %}
+  {% set repo_pkg = 'salt-amzn-repo-{0}{1}.amzn1.noarch.rpm'.format(branch, params.repo_pkg_version) %}
+  {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/amazon/{1}'.format(params.dev, repo_pkg) %}
 {% endif %}
 
-{# Parameters used with pkgrepo.managed install #}
-{% set release = 'latest' %}
-
-{% if params.use_latest %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}/$basearch/latest'.format(params.dev, release) %}
-{% elif params.test_rc_pkgs %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}salt_rc/yum/amazon/{1}/$basearch'.format(params.dev, release) %}
-{% else %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}/$basearch/archive/{2}' %}
-  {% set repo_url = repo_url.format(params.dev, release, params.salt_version) %}
-{% endif %}
-
-{% set key_name = 'SALTSTACK-EL5-GPG-KEY.pub' if params.on_rhel_5 else 'SALTSTACK-GPG-KEY.pub' %} 
+{% set key_name = 'SALTSTACK-GPG-KEY.pub' %}
 {% set key_url = '{0}/{1}'.format(repo_url, key_name) %}
 
 
 {% if params.use_repo_pkg %}
 add-repo:
   cmd.run:
-    {% if params.on_rhel_5 %}
-    - name: wget {{ repo_pkg_url }} ; rpm -iv {{ repo_pkg }} ; rm -f {{ repo_pkg }}
-    {% else %}
     - name: yum install -y {{ repo_pkg_url }}
-    {% endif %}
     - unless:
       - rpm -q {{ repo_pkg.split('.rpm')[0] }}
 replace_repo_file:
@@ -90,7 +78,7 @@ restart-salt:
 {% endif %}
 
 {% else %}
-install-salt-backup:
+install-salt:
   cmd.run:
     - name: yum -y install {{ params.versioned_pkgs | join(' ') }}
 {% endif %}
