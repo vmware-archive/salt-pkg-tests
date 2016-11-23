@@ -33,7 +33,7 @@
 {% set dev = dev + '/' if dev else '' %}
 
 {# Used for specifying a 'rc' packages SaltStack repository #}
-{% set test_rc_pkgs = pillar.get('test_rc_pkgs', 'False') %}
+{% set test_rc_pkgs = pillar.get('test_rc_pkgs', False) %}
 
 {# Enable installing from EPEL testing #}
 {% set testing = pillar.get('testing', False) %}
