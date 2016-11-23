@@ -3,7 +3,7 @@
 
 
 {# Set package repository from platform information #}
-{% if params.os_family == 'RedHat' %}
+{% if params.os_family == 'RedHat' and 'Amazon' not in params.os %}
 
   {% set pkg_repo = params.pkg_repo or 'rhel' %}
 
