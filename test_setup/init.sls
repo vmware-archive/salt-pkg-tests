@@ -20,6 +20,9 @@ disable_services:
     - names:
       - salt-master
       - salt-minion
+{% if params.os == 'Debian' %}
+    - init_delay: 10
+{% endif %}
     - require_in:
       - file: remove_pki
       - file: clear_minion_id
