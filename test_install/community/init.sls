@@ -23,6 +23,10 @@
 
   {% set pkg_repo = params.pkg_repo or 'suse' %}
 
+{% elif params.os_family == 'Solaris' %}
+
+  {% set pkg_repo = params.pkg_repo or 'smartos' %}
+
 {% elif params.os == 'Fedora' %}
 
   {% set pkg_repo = params.pkg_repo or 'fedora' %}

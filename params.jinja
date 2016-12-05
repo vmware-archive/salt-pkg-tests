@@ -62,13 +62,13 @@
 
 {# Set paths for configuration files an misc variables#}
 {% if on_smartos %}
-  {% set minion_config = '/opt/salt/etc/minion' %}
+  {% set minion_config = '/opt/local/etc/salt/minion' %}
   {% set master_config = '' %}
-  {% set minion_id_config = '/opt/salt/etc/minion_id' %}
-  {% set pki_config = '/opt/salt/etc/pki' %}
+  {% set minion_id_config = '/opt/local/etc/salt/minion_id' %}
+  {% set pki_config = '/opt/local/etc/pki' %}
   {% set service_master = 'svcadm enable salt-master' %}
   {% set service_minion = 'svcadm enable salt-minion' %}
-  {% set file_roots = '/opt/salt/srv/salt' %}
+  {% set file_roots = '/opt/local/etc/salt/states/' %}
 {% else %}
   {% set minion_config = '/etc/salt/minion' %}
   {% set master_config = '' %}
