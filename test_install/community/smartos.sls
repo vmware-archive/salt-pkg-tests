@@ -1,19 +1,32 @@
 {# Import global parameters that source from grains and pillars #}
 {% import 'params.jinja' as params %}
 
-{% set esky_pkg = 'http://pkg.blackdot.be/extras/salt-{0}-esky-smartos.tar.gz'.format(params.salt_version) %}
+{% set pkg_ver = '2015Q4' %}
+{% set pkg_arch = 'x86_64' %}
+{% set gpg_keyname = 'pbd-signature.key' %}
+{% set gpg_key_location = '/tmp/' + gpg_keyname %}
+{% set gpg_keyring = '/opt/local/etc/gnupg/pkgsrc.gpg' %}
 
-esky_pkg:
-  archive.extracted:
-    - name: /opt/
-    - source: {{ esky_pkg }}
-    - tar_options: xvpz
-    - archive_format: tar
+get_key:
+  file.managed:
+    - name: {{ gpg_key_location }}
+    - source: http://pkg.blackdot.be/{{ gpg_keyname }}
     - skip_verify: True
-    - if_missing: /opt/salt/
 
-run_installer:
+import_gpg_key:
   cmd.run:
-    - name: sh /opt/salt/install/install.sh
-    - require:
-      - archive: esky_pkg
+    - name: gpg --no-default-keyring --keyring {{ gpg_keyring }} --import {{ gpg_key_location }}
+
+add_repo:
+  file.append:
+    - name: /opt/local/etc/pkgin/repositories.conf
+    - text: |
+        http://pkg.blackdot.be/packages/{{ pkg_ver }}/{{ pkg_arch }}/All
+
+refresh_repo:
+  cmd.run:
+    - name: pkgin -fy up
+
+install_salt:
+  cmd.run:
+    - name: pkgin -y in salt-{{ params.salt_version }}
