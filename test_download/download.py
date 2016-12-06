@@ -18,7 +18,8 @@ TMP_DOCKER_DIR = os.path.join('/tmp', 'docker')
 
 
 os_tabs = ['tab1-debian', 'tab2-debian', 'tab3-debian', 'tab1-redhat',
-           'tab2-redhat', 'tab3-redhat']
+           'tab2-redhat', 'tab3-redhat', 'tab1-ubuntu', 'tab2-ubuntu',
+           'tab3-ubuntu']
 
 def det_os_family(os):
     return {'tab1-debian': 'debian',
@@ -27,11 +28,15 @@ def det_os_family(os):
             'tab1-redhat': 'redhat',
             'tab2-redhat': 'redhat',
             'tab3-redhat': 'redhat',
+            'tab1-ubuntu': 'ubuntu',
+            'tab2-ubuntu': 'ubuntu',
+            'tab3-ubuntu': 'ubuntu',
            }[os]
 
 def det_os_versions(os_v):
     return {'debian': ['debian7', 'debian8'],
             'redhat': ['redhat5', 'redhat6', 'redhat7'],
+            'ubuntu': ['ubuntu12', 'ubuntu14', 'ubuntu16'],
            }[os_v]
 
 def determine_release(current_os):
