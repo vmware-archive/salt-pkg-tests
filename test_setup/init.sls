@@ -12,8 +12,8 @@ add_saltkey_path:
 disable_services:
   cmd.run:
     - names:
-      - svcadm disable salt-minion
-      - svcadm disable salt-master
+      - svcadm disable salt:minion
+      - svcadm disable salt:master
 {% else %}
 disable_services:
   service.dead:
