@@ -2,7 +2,10 @@
 {% set salt_version = pillar['salt_version'] %}
 {% set verify_salt = 'salt-master --version; salt-minion --version; salt-ssh --version; salt-syndic --version; salt-cloud --version; salt-api --version;' %}
 {% set staging = '/staging/' if pillar['staging'] == True else '//' %}
-{% set repo_pkg_vr = pillar.get('repo_pkg_vr', '1') %}
+
+setup_install_inst:
+  cmd.script:
+    - name: salt://test_download/download.py
 
 {% for os, args in pillar['os'].iteritems() %}
 {% for install_type in pillar['install_type'] %}
@@ -15,16 +18,8 @@
 {% set os_version = args['os_version'] %}
 {% set tag = args['tag'] %}
 {% set distro = args['distro'] %}
-{% set codename = args['codename'] %}
 {% set state_id = os + os_version + install_type %}
 {% set osflavor = args['osflavor'] %}
-{#{% set on_cent5 = True if os == 'centos5' else False %}#}
-{% set on_cent5 = True if '5' in os else False %}
-{% if on_cent5 %}
-  {% set install_cmd = 'wget' %}
-{% else %}
-  {% set install_cmd = 'yum install -y' %}
-{% endif %}
 
 {# repo urls and other #}
 {% if os == 'windows' %} {% set pkg_name = 'Salt-Minion-{0}-{1}-Setup.exe'.format(salt_version, 'AMD64') %}
@@ -41,7 +36,7 @@
 {% endif %}
 
 {# docker images-tag values #}
-{% set image_name = 'testing-' + os + codename + os_version %}
+{% set image_name = 'testing-' + os + os_version %}
 {% set image_tag = os + '-' + install_type + os_version %}
 {% set test_docker = True if args['test_with_docker'] == True else False %}
 
@@ -50,22 +45,16 @@
 {{ state_id }}add_dockerfile:
   file.managed:
     - name: {{ dockerfile }}
-    - source: salt://docker/Dockerfile
+    - source: salt://test_download/Dockerfile
     - makedirs: True
     - template: jinja
     - context:
         os: {{ os }}
         os_version: {{ os_version }}
         osflavor: {{ osflavor }}
-        codename: {{ codename }}
         distro: {{ distro }}
-        install_type: {{ install_type }}
-        salt_version: {{ salt_version }}
         staging: {{ staging }}
-        on_cent5: {{ on_cent5 }}
-        install_cmd: {{ install_cmd }}
         tag: {{ tag }}
-        repo_pkg_vr: {{ repo_pkg_vr }}
 
 {{ state_id }}build:
   docker.built:
