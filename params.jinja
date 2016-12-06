@@ -66,8 +66,8 @@
   {% set master_config = '' %}
   {% set minion_id_config = '/opt/local/etc/salt/minion_id' %}
   {% set pki_config = '/opt/local/etc/pki' %}
-  {% set service_master = 'svcadm enable salt-master' %}
-  {% set service_minion = 'svcadm enable salt-minion' %}
+  {% set service_master = 'svcadm enable salt:master' %}
+  {% set service_minion = 'svcadm enable salt:minion' %}
   {% set file_roots = '/opt/local/etc/salt/states/' %}
 {% else %}
   {% set minion_config = '/etc/salt/minion' %}
