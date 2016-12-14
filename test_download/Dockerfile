@@ -1,6 +1,5 @@
 from {{ distro }}:{{ tag }}
 COPY install_salt.sh /tmp/install_salt.sh
-RUN bash /tmp/install_salt.sh
 
 {% if 'debian' in osflavor %}
 
@@ -16,3 +15,4 @@ RUN if ! dpkg -l ca-certificates > /dev/null; then apt-get install ca-certificat
   {% endif %}
 
 {% endif %}
+RUN bash /tmp/install_salt.sh

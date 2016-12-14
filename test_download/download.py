@@ -17,6 +17,7 @@ TMP_DOCKER_DIR = os.path.join('/tmp', 'docker')
 #/tmp/docker/os/install_type/
 
 
+check_steps = []
 os_tabs = ['tab1-debian', 'tab2-debian', 'tab3-debian', 'tab1-redhat',
            'tab2-redhat', 'tab3-redhat', 'tab1-ubuntu', 'tab2-ubuntu',
            'tab3-ubuntu']
@@ -51,6 +52,28 @@ def determine_release(current_os):
         release='minor'
     return release
 
+def sanitize_steps(step):
+    '''
+    helper method that will clean up the steps for automation
+    '''
+    remove_steps = ['restart', 'saltstack.list', 'yum.repos.d/saltstack.repo',
+                   'python-', 'systemd', '[Service', 'Killmode']
+    text = (''.join(step.findAll(text=True)))
+
+    if 'install' in text:
+        text = text + ' -y'
+    elif 'saltstack-repo' in text:
+        text = "echo \"" + text + "\" > /etc/yum.repos.d/salt.repo"
+    elif 'deb http' in text:
+        text = "echo \"" + text + "\" > /etc/apt/sources.list.d/salt_test.list"
+
+    add_step = True
+    for rm in remove_steps:
+        if rm in text:
+            add_step = False
+    if add_step == True and text not in check_steps:
+        check_steps.append(text)
+
 
 def parse_html_method(tab_os, os_v):
     '''
@@ -65,6 +88,9 @@ def parse_html_method(tab_os, os_v):
             for cmd in tab_os_v.findAll(attrs={'class': 'language-bash'}):
                 if cmd not in os_instruction:
                     os_instruction.append(cmd)
+            for cmd_2 in tab_os_v.findAll(attrs={'class': 'language-ini'}):
+                if cmd_2 not in os_instruction:
+                    os_instruction.append(cmd_2)
         # get all instructions that run on both veresion of each os_family
         for cmd_all in tag.findAll('code', attrs={'class': None}):
             if cmd_all not in os_instruction:
@@ -78,24 +104,20 @@ def write_to_file(current_os, steps, release, os_v):
     '''
     distro=current_os.split('-')[1]
     docker_dir=os.path.join(TMP_DOCKER_DIR, os_v, release)
-    print(docker_dir)
     docker_file=os.path.join(docker_dir, "install_salt.sh")
 
     if not os.path.exists(docker_dir):
         os.makedirs(docker_dir)
     print('=============================Writing to {0}'.format(docker_file))
 
-    check_steps = []
     for step in steps:
-        text = (''.join(step.findAll(text=True)))
-        if text not in check_steps:
-            check_steps.append(text)
-
+        sanitize_steps(step)
     with open(docker_file, 'w') as outfile:
         for step in check_steps:
             print(step)
             outfile.write(step)
             outfile.write('\n')
+    del check_steps[:]
 
 for current_os in os_tabs:
     os_family = det_os_family(current_os)
