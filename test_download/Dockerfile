@@ -9,10 +9,7 @@ RUN if ! dpkg -l ca-certificates > /dev/null; then apt-get install ca-certificat
 
 {% elif 'centos' in os %}
   RUN if ! type wget > /dev/null; then yum install wget -y; fi
-
-  {% if staging == '/staging/' %}
-  RUN sed -i 's/com\/yum/com\/staging\/yum/' /etc/yum.repos.d/salt*.repo
-  {% endif %}
+  RUN yum install sudo -y
 
 {% endif %}
 RUN bash /tmp/install_salt.sh

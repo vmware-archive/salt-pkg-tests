@@ -1,13 +1,18 @@
 #!/usr/bin/python
 from BeautifulSoup import BeautifulSoup as bsoup
 import BeautifulSoup
+from shutil import copyfile
 import requests
 import re
 import os
 
 
 # Get and Parse url variables
+{% if staging %}
+URL = 'https://repo.saltstack.com/staging/index.html'
+{% else %}
 URL = 'https://repo.saltstack.com/index.html'
+{% endif %}
 GET_URL = requests.get(URL)
 HTML = GET_URL.content
 PARSE_HTML = bsoup(HTML)
@@ -52,7 +57,7 @@ def determine_release(current_os):
         release='minor'
     return release
 
-def sanitize_steps(step):
+def sanitize_steps(step, os_v):
     '''
     helper method that will clean up the steps for automation
     '''
@@ -62,10 +67,23 @@ def sanitize_steps(step):
 
     if 'install' in text:
         text = text + ' -y'
-    elif 'saltstack-repo' in text:
-        text = "echo \"" + text + "\" > /etc/yum.repos.d/salt.repo"
     elif 'deb http' in text:
-        text = "echo \"" + text + "\" > /etc/apt/sources.list.d/salt_test.list"
+        text = "echo \'" + text + "\' > /etc/apt/sources.list.d/salt_test.list"
+        {% if staging %}
+        text = text + '; sed -i \'s/com\/apt/com\/staging\/apt/\' /etc/apt/sources.list.d/salt*.list'
+        {% endif %}
+
+    if 'redhat' in os_v:
+        if 'yum install http' in text:
+            {% if staging %}
+            text = text + '; sed -i \'s/com\/yum/com\/staging\/yum/\' /etc/yum.repos.d/salt*.repo'
+            {% endif %}
+            pass
+        if 'saltstack-repo' in text:
+            text = "echo \'" + text + "\' > /etc/yum.repos.d/salt.repo"
+            {% if staging %}
+            text = text + '; sed -i \'s/com\/yum/com\/staging\/yum/\' /etc/yum.repos.d/salt*.repo'
+            {% endif %}
 
     add_step = True
     for rm in remove_steps:
@@ -111,12 +129,19 @@ def write_to_file(current_os, steps, release, os_v):
     print('=============================Writing to {0}'.format(docker_file))
 
     for step in steps:
-        sanitize_steps(step)
+        sanitize_steps(step, os_v)
     with open(docker_file, 'w') as outfile:
         for step in check_steps:
             print(step)
             outfile.write(step)
             outfile.write('\n')
+
+    if 'redhat' in os_v:
+        ver = os_v[-1:]
+        cent_dockerdir=os.path.join(TMP_DOCKER_DIR, 'centos' + ver, release)
+        if not os.path.exists(cent_dockerdir):
+            os.makedirs(cent_dockerdir)
+        copyfile(docker_file, cent_dockerdir + "/install_salt.sh")
     del check_steps[:]
 
 for current_os in os_tabs:

@@ -1,11 +1,15 @@
 {% set tmp_docker_dir = '/tmp/docker/' %}
 {% set salt_version = pillar['salt_version'] %}
 {% set verify_salt = 'salt-master --version; salt-minion --version; salt-ssh --version; salt-syndic --version; salt-cloud --version; salt-api --version;' %}
-{% set staging = '/staging/' if pillar['staging'] == True else '//' %}
+{% set staging = True if pillar['staging'] == True else False %}
 
 setup_install_inst:
   cmd.script:
     - name: salt://test_download/download.py
+    - template: jinja
+    - context:
+        staging: {{ staging }}
+
 
 {% for os, args in pillar['os'].iteritems() %}
 {% for install_type in pillar['install_type'] %}
@@ -50,7 +54,6 @@ setup_install_inst:
     - template: jinja
     - context:
         os: {{ os }}
-        os_version: {{ os_version }}
         osflavor: {{ osflavor }}
         distro: {{ distro }}
         staging: {{ staging }}
