@@ -68,7 +68,7 @@ setup_install_inst:
 
 {{ state_id }}run_container:
   cmd.run:
-    - name: docker run -it {{ image_name }}:{{ image_tag }} /bin/bash -c "{{ verify_salt }}"
+    - name: docker run -i {{ image_name }}:{{ image_tag }} /bin/bash -c "{{ verify_salt }}"
 {% else %}
 
 download_{{ state_id }}{{ osflavor }}_pkg:
