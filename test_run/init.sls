@@ -55,10 +55,13 @@ exec:
       - salt {{ params.minion_id }} user.list_users
       - salt {{ params.minion_id }} network.arp
 
+{% set exists = salt['cmd.run']('pidof systemd') %}
+{% if exists %}
 systemd_config_check:
   cmd.script:
     - name: systemd_check
     - source: salt://test_run/files/systemd_script.sh
+{% endif %}
 
 state_file:
   file.managed:
@@ -67,7 +70,7 @@ state_file:
     - contents: |
         update:
           pkg.installed:
-            - name: htop
+            - name: bash
         salt_dude:
           user.present:
             - name: dude
