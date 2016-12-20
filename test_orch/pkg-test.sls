@@ -46,6 +46,7 @@ wait_for_dns:
     - tgt_type: list
     - sls:
       - test_orch.states.wait_for_dns
+    - timeout: 200
     - pillar:
         hostname: {{ host }}
 {% else %}
