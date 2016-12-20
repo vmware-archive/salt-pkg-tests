@@ -48,7 +48,7 @@ wait_for_dns:
       - test_orch.states.wait_for_dns
     - pillar:
         hostname: {{ host }}
-{% elif %}
+{% else %}
 sleep_{{ action }}_{{ host }}:
   salt.function:
     - name: test.sleep
