@@ -9,6 +9,7 @@
 {% set upgrade = salt['pillar.get']('upgrade', '') %}
 {% set clean = salt['pillar.get']('clean', '') %}
 {% set repo = salt['pillar.get']('repo', '') %}
+{% set wait_for_dns = salt['pillar.get']('wait_for_dns', 'False') %}
 {% set hosts = [] %}
 
 {% macro destroy_vm() -%}
@@ -38,12 +39,23 @@ create_{{ action }}_{{ host }}:
       - {{ host }}
       - {{ profile }}
 
+{% if wait_for_dns %}
+wait_for_dns:
+  salt.state:
+    - tgt: {{ orch_master }}
+    - tgt_type: list
+    - sls:
+      - test_orch.states.wait_for_dns
+    - pillar:
+        hostname: {{ host }}
+{% elif %}
 sleep_{{ action }}_{{ host }}:
   salt.function:
     - name: test.sleep
     - tgt: {{ orch_master }}
     - arg:
       - 240
+{% endif %}
 
 {% if '5' in host %}
 install_python_{{ action }}:
