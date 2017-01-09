@@ -85,7 +85,7 @@ restart-salt:
 {% endif %}
 
 {% else %}
-install-salt-backup:
+install-salt:
   cmd.run:
     - name: yum -y install {{ params.versioned_pkgs | join(' ') }}
     - require:

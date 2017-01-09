@@ -65,7 +65,7 @@ restart-salt:
 
 {% else %}
 
-install-salt-backup:
+install-salt:
   cmd.run:
     - name: aptitude -y install {{ params.versioned_pkgs | join(' ') }}
     - require:

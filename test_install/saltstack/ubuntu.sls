@@ -60,7 +60,7 @@ restart-salt:
 
 {% else %}
 
-install-salt-backup:
+install-salt:
   cmd.run:
     - name: apt-get -y install {{ params.pkgs | join(' ') }}
     - require:
