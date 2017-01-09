@@ -18,8 +18,13 @@ def get_args():
     parser.add_argument(
         '-s', '--staging',
         action='store_true',
-        help='Specify if you want to use stagign url or not'
+        help='Specify if you want to use staging url or not'
     )
+    parser.add_argument(
+        '-b', '--branch',
+        help='Specify the salt branch'
+    )
+
     return parser
 
 def print_flush(*args, **kwargs):
@@ -35,7 +40,11 @@ def get_url(args):
     ubuntu_url = 'apt/ubuntu/'
     redhat_arch = '/x86_64/'
     debian_arch = '/amd64/'
-    version = 'latest'
+
+    if args.branch:
+        version = args.branch
+    else:
+        version = 'latest'
 
     if args.staging:
         repo_url=repo_url + 'staging/'
