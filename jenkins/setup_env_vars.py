@@ -18,11 +18,11 @@ def get_args():
     parser.add_argument(
         '-s', '--staging',
         action='store_true',
-        help='Specify if you want to use stagign url or not'
+        help='Specify if you want to use staging url or not'
     )
     parser.add_argument(
         '-b', '--branch',
-        help='Specify if you want to use stagign url or not'
+        help='Specify the salt branch'
     )
 
     return parser
