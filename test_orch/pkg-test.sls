@@ -1,3 +1,4 @@
+#!mako|jinja|yaml
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
 {% set upgrade_salt_version = salt['pillar.get']('upgrade_salt_version', '') %}
 {% set repo_pkg = salt['pillar.get']('repo_pkg', '') %}
@@ -10,11 +11,21 @@
 {% set clean = salt['pillar.get']('clean', '') %}
 {% set repo = salt['pillar.get']('repo', '') %}
 {% set wait_for_dns = salt['pillar.get']('wait_for_dns', 'False') %}
+
+<%!
+import string
+import random
+%>
+<% random_num = ''.join(random.choice(string.ascii_uppercase) for _ in range(4))
+%>
+
+{% set rand_name = <%text>'</%text>${random_num}<%text>'</%text> %}
+
 {% set hosts = [] %}
 
 {% macro destroy_vm() -%}
 {% for profile in cloud_profile %}
-{% set host = username + profile %}
+{% set host = username + profile + rand_name %}
 {% do hosts.append(host) %}
 
 destroy_{{ host }}:
@@ -29,7 +40,7 @@ destroy_{{ host }}:
 
 {% macro create_vm(action='None') -%}
 {% for profile in cloud_profile %}
-{% set host = username + profile %}
+{% set host = username + profile + rand_name %}
 {% do hosts.append(host) %}
 create_{{ action }}_{{ host }}:
   salt.function:
