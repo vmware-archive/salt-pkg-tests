@@ -64,16 +64,11 @@ restart-salt:
 {% endif %}
 
 {% else %}
+
 install-salt:
-  pkg.installed:
-    - names: {{ params.pkgs }}
-    - version: {{ params.salt_version }}
+  cmd.run:
+    - name: aptitude -y install {{ params.versioned_pkgs | join(' ') }}
     - require:
       - module: update-package-database
 
-install-salt-backup:
-  cmd.run:
-    - name: aptitude -y install {{ params.versioned_pkgs | join(' ') }}
-    - onfail:
-      - pkg: install-salt
 {% endif %}

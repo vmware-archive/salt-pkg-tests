@@ -59,16 +59,11 @@ restart-salt:
 {% endif %}
 
 {% else %}
+
 install-salt:
-  pkg.installed:
-    - names: {{ params.pkgs }}
-    - version: {{ params.salt_version }}
+  cmd.run:
+    - name: apt-get -y install {{ params.pkgs | join(' ') }}
     - require:
       - module: update-package-database
 
-install-salt-backup:
-  cmd.run:
-    - name: apt-get -y install {{ params.pkgs | join(' ') }}
-    - onfail:
-      - pkg: install-salt
 {% endif %}

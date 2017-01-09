@@ -86,14 +86,9 @@ restart-salt:
 
 {% else %}
 install-salt:
-  pkg.installed:
-    - names: {{ params.pkgs }}
-    - version: {{ params.salt_version }}
-    - require:
-      - module: update-package-database
-install-salt-backup:
   cmd.run:
     - name: yum -y install {{ params.versioned_pkgs | join(' ') }}
-    - onfail:
-      - pkg: install-salt
+    - require:
+      - module: update-package-database
+
 {% endif %}
