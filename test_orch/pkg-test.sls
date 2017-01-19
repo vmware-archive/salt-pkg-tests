@@ -23,7 +23,7 @@ import random
 
 {% set hosts = [] %}
 
-{% macro destroy_vm() -%}
+{% macro destroy_vm(action='None') -%}
 {% for profile in cloud_profile %}
 {% set host = username + profile + rand_name %}
 {% do hosts.append(host) %}
@@ -55,11 +55,16 @@ wait_for_dns:
   salt.state:
     - tgt: {{ orch_master }}
     - tgt_type: list
+    - concurrent: True
     - sls:
       - test_orch.states.wait_for_dns
     - timeout: 200
     - pillar:
         hostname: {{ host }}
+    - require:
+      - salt: create_{{ action }}_{{ host }}
+    - require_in:
+      - salt: verify_host_{{ action }}_{{ host }}
 {% else %}
 sleep_{{ action }}_{{ host }}:
   salt.function:
@@ -67,6 +72,10 @@ sleep_{{ action }}_{{ host }}:
     - tgt: {{ orch_master }}
     - arg:
       - 240
+    - require:
+      - salt: create_{{ action }}_{{ host }}
+    - require_in:
+      - salt: verify_host_{{ action }}_{{ host }}
 {% endif %}
 
 {% if '5' in host %}
@@ -120,6 +129,10 @@ test_setup_{{ action }}:
     - pillar:
         salt_version: {{ salt_version }}
         dev: {{ dev }}
+    - require:
+      - salt: test_install_{{ action }}
+    - require_in:
+      - salt: test_run_{{ action }}
 {% endif %}
 
 test_run_{{ action }}:
@@ -137,11 +150,12 @@ test_run_{{ action }}:
 {% if clean %}
 {{ create_vm(action='clean') }}
 {{ setup_salt(salt_version, action='clean') }}
-{{ destroy_vm() }}
+{{ destroy_vm(action='clean') }}
 {% endif %}
 
 {% if upgrade %}
 {{ create_vm(action='upgrade') }}
 {{ setup_salt(upgrade_salt_version, action='preupgrade') }}
 {{ setup_salt(salt_version, action='upgrade', upgrade_val='True') }}
+{{ destroy_vm(action='upgrade') }}
 {% endif %}

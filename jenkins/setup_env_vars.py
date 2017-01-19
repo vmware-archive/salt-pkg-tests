@@ -32,9 +32,14 @@ def print_flush(*args, **kwargs):
     sys.stdout.flush()
 
 def get_url(args):
-    os_v = args.os[-1:]
+    if 'ubuntu' in args.os:
+        os_v = args.os[-2:] + '.04'
+    else:
+        os_v = args.os[-1:]
+
     repo_url = 'https://repo.saltstack.com/'
 
+    amazon_url = 'yum/amazon/'
     redhat_url = 'yum/redhat/'
     debian_url = 'apt/debian/'
     ubuntu_url = 'apt/ubuntu/'
@@ -55,6 +60,11 @@ def get_url(args):
         url = repo_url + debian_url + os_v + debian_arch + version
     elif 'ubuntu' in args.os:
         url = repo_url + ubuntu_url + os_v + debian_arch + version
+    elif 'amazon' in args.os:
+        if args.branch == '2016.3':
+            url = repo_url + redhat_url + '6' + redhat_arch + version
+        else:
+            url = repo_url + amazon_url + 'latest' + redhat_arch + version
     return url
 
 def set_env_vars(**kwargs):
@@ -64,10 +74,12 @@ def set_env_vars(**kwargs):
     month = ver_split[1]
     release = ver_split[2]
     upgrade_from_version = year + '.' + month + '.' + str((int(release) -1))
+    branch = year + '.' + month
 
     output = []
     output.append('SALT_VERSION={0}'.format(salt_version))
     output.append('UPGRADE_VERSION={0}'.format(upgrade_from_version))
+    output.append('SALT_BRANCH={0}'.format(branch))
 
     print_flush('\n\n{0}\n\n'.format('\n'.join(output)))
 
