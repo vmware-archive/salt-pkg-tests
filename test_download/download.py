@@ -2,30 +2,30 @@
 from BeautifulSoup import BeautifulSoup as bsoup
 import BeautifulSoup
 from shutil import copyfile
+import argparse
 import requests
 import re
 import os
 
 
-# Get and Parse url variables
-{% if staging %}
-URL = 'https://repo.saltstack.com/staging/index.html'
-{% else %}
-URL = 'https://repo.saltstack.com/index.html'
-{% endif %}
-GET_URL = requests.get(URL)
-HTML = GET_URL.content
-PARSE_HTML = bsoup(HTML)
 
 # Miscellaneous variables
 TMP_DOCKER_DIR = os.path.join('/tmp', 'docker')
-#/tmp/docker/os/install_type/
-
+LATEST = '2016.11'
 
 check_steps = []
 os_tabs = ['tab1-debian', 'tab2-debian', 'tab3-debian', 'tab1-redhat',
            'tab2-redhat', 'tab3-redhat', 'tab1-ubuntu', 'tab2-ubuntu',
            'tab3-ubuntu']
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '-b', '--branch',
+        help='Specific salt branch. Ex. 2016.3'
+    )
+
+    return parser
 
 def det_os_family(os):
     return {'tab1-debian': 'debian',
@@ -93,13 +93,23 @@ def sanitize_steps(step, os_v):
         check_steps.append(text)
 
 
-def parse_html_method(tab_os, os_v):
+def parse_html_method(tab_os, os_v, args):
     '''
     Parse the index.html for install commands
     '''
+    # Get and Parse url variables
+    if args.branch != LATEST:
+        url = 'https://repo.saltstack.com/staging/{0}.html'.format(args.branch)
+    else:
+        url = 'https://repo.saltstack.com/staging/index.html'.format()
+
+    get_url = requests.get(url)
+    html = get_url.content
+    parse_html = bsoup(html)
+
     os_instruction = []
 
-    for tag in PARSE_HTML.findAll(attrs={'id' : tab_os}):
+    for tag in parse_html.findAll(attrs={'id' : tab_os}):
         # grab all instructions for a specific os and release
         # for example grab debian7 for latest release
         for tab_os_v in tag.findAll(attrs={'class': re.compile(os_v + ".*")}):
@@ -116,38 +126,38 @@ def parse_html_method(tab_os, os_v):
     return os_instruction
 
 
-def write_to_file(current_os, steps, release, os_v):
+def write_to_file(current_os, steps, release, os_v, salt_branch):
     '''
     Write installation instructions to Dockerfile
     '''
     distro=current_os.split('-')[1]
-    docker_dir=os.path.join(TMP_DOCKER_DIR, os_v, release)
+    docker_dir=os.path.join(TMP_DOCKER_DIR, salt_branch, os_v, release)
     docker_file=os.path.join(docker_dir, "install_salt.sh")
 
     if not os.path.exists(docker_dir):
         os.makedirs(docker_dir)
-    print('=============================Writing to {0}'.format(docker_file))
 
     for step in steps:
         sanitize_steps(step, os_v)
     with open(docker_file, 'w') as outfile:
         for step in check_steps:
-            print(step)
             outfile.write(step)
             outfile.write('\n')
 
     if 'redhat' in os_v:
         ver = os_v[-1:]
-        cent_dockerdir=os.path.join(TMP_DOCKER_DIR, 'centos' + ver, release)
+        cent_dockerdir=os.path.join(TMP_DOCKER_DIR, salt_branch, 'centos' + ver, release)
         if not os.path.exists(cent_dockerdir):
             os.makedirs(cent_dockerdir)
         copyfile(docker_file, cent_dockerdir + "/install_salt.sh")
     del check_steps[:]
 
 for current_os in os_tabs:
+    parser = get_args()
+    args = parser.parse_args()
     os_family = det_os_family(current_os)
     os_versions = det_os_versions(os_family)
     release = determine_release(current_os)
     for os_v in os_versions:
-        os_instr = parse_html_method(current_os, os_v)
-        write_to_file(current_os, os_instr, release, os_v)
+        os_instr = parse_html_method(current_os, os_v, args)
+        write_to_file(current_os, os_instr, release, os_v, args.branch)

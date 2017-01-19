@@ -2,11 +2,22 @@
 {% set salt_version = pillar['salt_version'] %}
 {% set verify_salt = 'salt-master --version; salt-minion --version; salt-ssh --version; salt-syndic --version; salt-cloud --version; salt-api --version;' %}
 {% set staging = True if pillar['staging'] == True else False %}
+{% set salt_branch = pillar['salt_branch'] %}
 
 setup_install_inst:
   cmd.script:
     - name: salt://test_download/download.py
     - template: jinja
+    - args: "-b {{ salt_branch }}"
+    - context:
+        staging: {{ staging }}
+
+setup_install_inst2:
+  file.managed:
+    - source: salt://test_download/download.py
+    - name: /tmp/test.py
+    - template: jinja
+    - args: "-b {{ salt_branch }}"
     - context:
         staging: {{ staging }}
 
@@ -15,7 +26,7 @@ setup_install_inst:
 {% for install_type in pillar['install_type'] %}
 
 {# directory values #}
-{% set dockerfile_dir = tmp_docker_dir + os + '/' + install_type + '/' %}
+{% set dockerfile_dir = tmp_docker_dir ~ salt_branch ~ '/' + os + '/' + install_type + '/' %}
 {% set dockerfile = dockerfile_dir + 'Dockerfile' %}
 
 {# os values #}
@@ -28,6 +39,7 @@ setup_install_inst:
 {# repo urls and other #}
 {% if os == 'windows' %} {% set pkg_name = 'Salt-Minion-{0}-{1}-Setup.exe'.format(salt_version, 'AMD64') %}
 {% set md5_name = pkg_name + '.md5' %}
+{% set staging = '/staging/' if pillar['staging'] == True else '' %}
 {% set repo_url = 'https://repo.saltstack.com{0}windows/'.format(staging) %}
 {% set pkg_url = repo_url + pkg_name %}
 {% set md5_url = repo_url + md5_name %}
