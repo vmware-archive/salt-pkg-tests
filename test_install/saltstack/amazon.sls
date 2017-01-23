@@ -12,6 +12,11 @@
   {% set repo_url = 'https://repo.saltstack.com/{0}salt_rc/yum/amazon/latest/$basearch'.format(params.dev) %}
   {% set repo_pkg = 'salt-amzn-repo-{0}{1}.amzn1.noarch.rpm'.format(branch, params.repo_pkg_version) %}
   {% set repo_pkg_url = 'https://repo.saltstack.com/{0}salt_rc/yum/amazon/{1}'.format(params.dev, repo_pkg) %}
+{% elif branch == '2016.3' %}
+  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/6/$basearch/archive/{1}' %}
+  {% set repo_url = repo_url.format(params.dev, params.salt_version) %}
+  {% set repo_pkg = 'salt-amzn-repo-{0}{1}.ami.noarch.rpm'.format(branch, params.repo_pkg_version) %}
+  {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/amazon/{1}'.format(params.dev, repo_pkg) %}
 {% else %}
   {% set repo_url = 'https://repo.saltstack.com/{0}yum/amazon/latest/$basearch/archive/{1}' %}
   {% set repo_url = repo_url.format(params.dev, params.salt_version) %}
