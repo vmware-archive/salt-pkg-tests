@@ -11,7 +11,7 @@
 
     {% set pkg_repo = params.pkg_repo or 'amazon' %}
 
-{% elif params.os == 'Debian' %}
+{% elif params.os == 'Debian' or params.os == 'Raspbian' %}
 
     {% set pkg_repo = params.pkg_repo or 'debian' %}
 
