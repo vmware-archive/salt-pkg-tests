@@ -67,7 +67,7 @@ restart-salt:
 
 install-salt:
   cmd.run:
-    - name: aptitude -y install {{ params.versioned_pkgs | join(' ') }}
+    - name: apt-get -y install {{ params.pkgs | join(' ') }}
     - require:
       - module: update-package-database
 

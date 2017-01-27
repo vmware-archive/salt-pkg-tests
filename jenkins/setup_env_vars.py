@@ -45,6 +45,7 @@ def get_url(args):
     ubuntu_url = 'apt/ubuntu/'
     redhat_arch = '/x86_64/'
     debian_arch = '/amd64/'
+    pi_arch = '/armhf/'
 
     if args.branch:
         version = args.branch
@@ -60,6 +61,8 @@ def get_url(args):
         url = repo_url + debian_url + os_v + debian_arch + version
     elif 'ubuntu' in args.os:
         url = repo_url + ubuntu_url + os_v + debian_arch + version
+    elif 'pi' in args.os:
+        url = repo_url + debian_url + '8' + pi_arch + version
     elif 'amazon' in args.os:
         if args.branch == '2016.3':
             url = repo_url + redhat_url + '6' + redhat_arch + version
