@@ -30,6 +30,12 @@ versions:
       - salt --versions-report
       - salt {{ params.minion_id }} test.versions_report
 
+compare_versions:
+  cmd.script:
+    - name: /tmp/check_cmd_returns.py
+    - source: salt://test_run/files/check_cmd_returns.py
+    - args: "-m {{ params.minion_id }} -v {{ params.salt_version }}"
+
 grains:
   cmd.run:
     - names:
