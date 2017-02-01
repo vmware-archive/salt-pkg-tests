@@ -1,5 +1,6 @@
 from {{ distro }}:{{ tag }}
 COPY install_salt.sh /tmp/install_salt.sh
+COPY check_cmd_returns.py /tmp/check_cmd_returns.py
 
 {% if 'debian' in osflavor %}
 

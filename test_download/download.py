@@ -10,7 +10,7 @@ import os
 
 
 # Miscellaneous variables
-TMP_DOCKER_DIR = os.path.join('/tmp', 'docker')
+TMP_DOCKER_DIR = os.path.join('/tmp', 'docker', "{{ rand_dir }}")
 LATEST = '2016.11'
 
 check_steps = []
