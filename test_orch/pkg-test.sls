@@ -1,4 +1,5 @@
 #!mako|jinja|yaml
+{% set key_timeout = pillar.get('key_timeout', '30') %}
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
 {% set upgrade_salt_version = salt['pillar.get']('upgrade_salt_version', '') %}
 {% set repo_pkg = salt['pillar.get']('repo_pkg', '') %}
@@ -78,7 +79,7 @@ sleep_{{ action }}_{{ host }}:
       - salt: verify_host_{{ action }}_{{ host }}
 {% endif %}
 
-{% if '5' in host %}
+{% if 'python26' in host %}
 install_python_{{ action }}:
   salt.function:
     - name: cmd.run
@@ -129,6 +130,7 @@ test_setup_{{ action }}:
     - pillar:
         salt_version: {{ salt_version }}
         dev: {{ dev }}
+        key_timeout: {{ key_timeout }}
     - require:
       - salt: test_install_{{ action }}
     - require_in:
@@ -147,9 +149,25 @@ test_run_{{ action }}:
         dev: {{ dev }}
 {%- endmacro %}
 
+{% macro clean_up(action='None') -%}
+{% for profile in cloud_profile %}
+{% set host = username + profile + rand_name %}
+
+clean_up_known_hosts_{{ action }}:
+  salt.function:
+    - tgt: {{ orch_master }}
+    - name: ssh.rm_known_host
+    - arg:
+      - root
+      - {{ host }}
+
+{% endfor %}
+{%- endmacro %}
+
 {% if clean %}
 {{ create_vm(action='clean') }}
 {{ setup_salt(salt_version, action='clean') }}
+{{ clean_up(action='clean') }}
 {{ destroy_vm(action='clean') }}
 {% endif %}
 
@@ -157,5 +175,6 @@ test_run_{{ action }}:
 {{ create_vm(action='upgrade') }}
 {{ setup_salt(upgrade_salt_version, action='preupgrade') }}
 {{ setup_salt(salt_version, action='upgrade', upgrade_val='True') }}
+{{ clean_up(action='upgrade') }}
 {{ destroy_vm(action='upgrade') }}
 {% endif %}

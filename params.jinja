@@ -78,3 +78,6 @@
   {% set service_minion = 'service salt-minion start' %}
   {% set file_roots = '/srv/salt' %}
 {% endif %}
+
+{# Miscellaneous options #}
+{% set key_timeout = pillar.get('key_timeout', '30') %}

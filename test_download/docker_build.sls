@@ -19,6 +19,8 @@ setup_install_inst:
     - context:
         staging: {{ staging }}
         rand_dir: {{ rand_dir }}
+    - require:
+      - file: make_tmp_dir
 
 {% for os, args in pillar['os'].iteritems() %}
 {% for install_type in pillar['install_type'] %}
@@ -79,11 +81,15 @@ setup_install_inst:
     - name: {{ dockerfile_dir }}/install_salt.sh
     - pattern: com/yum
     - repl: com/staging/yum
+    - require:
+      - cmd: setup_install_inst
 {{ state_id }}add_staging_apt:
   file.replace:
     - name: {{ dockerfile_dir }}/install_salt.sh
     - pattern: com/apt
     - repl: com/staging/apt
+    - require:
+      - cmd: setup_install_inst
 {% endif %}
 
 {{ state_id }}build:
@@ -92,14 +98,21 @@ setup_install_inst:
     - tag: {{ image_tag }}
     - path: {{ dockerfile_dir }}
     - force: True
+    - require:
+      - file: {{ state_id }}add_version_script
+      - file: {{ state_id }}add_dockerfile
 
 {{ state_id }}run_container:
   cmd.run:
     - name: docker run -i {{ image_name }}:{{ image_tag }} /bin/bash -c "{{ verify_salt }}"
+    - require:
+      - docker: {{ state_id }}build
 
 {{ state_id }}compare_versions:
   cmd.run:
     - name: docker run -i {{ image_name }}:{{ image_tag }} python /tmp/check_cmd_returns.py -a -v {{ salt_version }}
+    - require:
+      - docker: {{ state_id }}build
 
 {% else %}
 

@@ -61,7 +61,7 @@ enable_services:
 
 wait_for_key:
   cmd.run:
-    - name: sleep 30
+    - name: sleep {{ params.key_timeout }}
     - require:
       - cmd: enable_services
 
