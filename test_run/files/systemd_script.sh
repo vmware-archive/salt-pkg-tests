@@ -18,5 +18,4 @@ if type "${SYSTEMD_CMD}" > /dev/null; then
     check_systemd_config Type notify
 else
     (>&2 echo "systemctl does not exist. systemd is not on this vm. SKIPPING TEST")
-    exit 1
 fi

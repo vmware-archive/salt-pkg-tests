@@ -1,7 +1,7 @@
 {# Import global parameters that source from grains and pillars #}
 {% import 'params.jinja' as params %}
 
-{% set pkg_ver = '2015Q4' %}
+{% set pkg_ver = '2016Q4' %}
 {% set pkg_arch = 'x86_64' %}
 {% set gpg_keyname = 'pbd-signature.key' %}
 {% set gpg_key_location = '/tmp/' + gpg_keyname %}
