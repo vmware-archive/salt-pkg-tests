@@ -52,17 +52,6 @@ upgrade-salt:
   cmd.run:
     - name: apt-get install -y -o Dpkg::Options::="--force-confdef" --only-upgrade {{ params.pkgs | join(' ') }}
 
-{% set exists = salt['cmd.run']('pgrep systemd') %}
-{% if not exists %}
-restart-salt:
-  cmd.run:
-    - names:
-      - service salt-master restart
-      - service salt-minion restart
-    - require:
-      - cmd: upgrade-salt
-{% endif %}
-
 {% else %}
 
 install-salt:

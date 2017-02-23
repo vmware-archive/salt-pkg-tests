@@ -73,17 +73,6 @@ upgrade-salt:
   cmd.run:
     - name: yum -y update {{ params.pkgs | join(' ') }}
 
-{% set exists = salt['cmd.run']('pidof systemd') %}
-{% if not exists %}
-restart-salt:
-  cmd.run:
-    - names:
-      - service salt-master restart
-      - service salt-minion restart
-    - require:
-      - cmd: upgrade-salt
-{% endif %}
-
 {% else %}
 install-salt:
   cmd.run:
