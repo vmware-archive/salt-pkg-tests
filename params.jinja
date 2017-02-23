@@ -63,10 +63,6 @@
 
 {# Add Option to test and upgrade #}
 {% set upgrade = pillar.get('upgrade', False) %}
-{% if upgrade %}
-  {% set upgrade_version = salt_version.split('.')[-1] | int + 1 %}
-  {% set salt_version = salt_version.rsplit('.', 1)[0] + '.' + upgrade_version|string %}
-{% endif %}
 
 {# Set paths for configuration files an misc variables#}
 {% if on_smartos %}
