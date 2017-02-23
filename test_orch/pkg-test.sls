@@ -1,4 +1,7 @@
 #!mako|jinja|yaml
+{# Import global parameters that source from grains and pillars #}
+{% import 'params.jinja' as params %}
+
 {% set key_timeout = pillar.get('key_timeout', '30') %}
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
 {% set upgrade_salt_version = salt['pillar.get']('upgrade_salt_version', '') %}
@@ -113,6 +116,7 @@ test_install_{{ action }}:
       - test_install.community
 {% endif %}
     - pillar:
+        versioned_pkgs: {{ params.versioned_pkgs | join(' ') }}
         salt_version: {{ salt_version }}
         dev: {{ dev }}
         latest: {{ latest }}

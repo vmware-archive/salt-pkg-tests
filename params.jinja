@@ -6,6 +6,10 @@
 {% set os_code_name = grains.get('oscodename', '')  %}
 {% set os_arch = grains.get('osarch', '') %}
 
+{# Fedora specific options #}
+{% set rh_version = pillar.get('rh_version', 'fc') %}
+{% set fed_pkg_version = pillar.get('fed_pkg_version', '1') %}
+
 {# Shorthand for specific platforms #}
 {% set on_rhel_5 = True if os_family == 'RedHat' and os_major_release == '5' else False %}
 {% set on_deb_7 = True if os_family == 'Debian' and os_major_release == '7' else False %}
@@ -59,6 +63,10 @@
 
 {# Add Option to test and upgrade #}
 {% set upgrade = pillar.get('upgrade', False) %}
+{% if upgrade %}
+  {% set upgrade_version = salt_version.split('.')[-1] | int + 1 %}
+  {% set salt_version = salt_version.rsplit('.', 1)[0] + '.' + upgrade_version|string %}
+{% endif %}
 
 {# Set paths for configuration files an misc variables#}
 {% if on_smartos %}
