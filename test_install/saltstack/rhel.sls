@@ -81,3 +81,11 @@ install-salt:
       - module: update-package-database
 
 {% endif %}
+
+{% if params.os_major_release == '7' %}
+check_base_dir:
+  cmd.script:
+    - name: check-base-directory
+    - source: salt://test_install/files/check_base_dir.py
+    - args: "-v {{ params.salt_version }} -o {{ params.os_major_release }} -d {{ os_family }}"
+{% endif %}
