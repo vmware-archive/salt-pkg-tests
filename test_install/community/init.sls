@@ -31,6 +31,10 @@
 
   {% set pkg_repo = params.pkg_repo or 'smartos' %}
 
+{% elif params.os_family == 'FreeBSD' %}
+
+  {% set pkg_repo = params.pkg_repo or 'freebsd' %}
+
 {% endif %}
 
 # Route into selected SLS file containing the install states

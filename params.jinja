@@ -17,6 +17,11 @@
 {% set on_amazon = True if os == 'Amazon' else False %}
 {% set on_fedora = os == 'Fedora' %}
 
+{# FreeBSD variables #}
+{% set repo_salt_fbsd = pillar.get('repo_salt_fbsd') %}
+{% set use_repo_salt_fbsd = True if repo_salt_fbsd else False %}
+{% set on_freebsd = True if os == 'FreeBSD' else False %}
+
 {# Package set information: may need to be overridden for repos having nonstandard package sets #}
 {% set salt_version = pillar.get('salt_version', '') %}
 {% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
@@ -65,7 +70,7 @@
 {% set upgrade = pillar.get('upgrade', False) %}
 
 {# Set paths for configuration files an misc variables#}
-{% if on_smartos %}
+{% if on_smartos or on_freebsd %}
   {% set minion_config = '/opt/local/etc/salt/minion' %}
   {% set master_config = '' %}
   {% set minion_id_config = '/opt/local/etc/salt/minion_id' %}
