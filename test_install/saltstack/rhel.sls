@@ -87,5 +87,5 @@ check_base_dir:
   cmd.script:
     - name: check-base-directory
     - source: salt://test_install/files/check_base_dir.py
-    - args: "-v {{ params.salt_version }} -o {{ params.os_major_release }} -d {{ os_family }}"
+    - args: "-v {{ params.salt_version }} -o {{ params.os_major_release }} -d {{ params.os_family }}"
 {% endif %}
