@@ -17,7 +17,7 @@ def get_args():
     return parser
 
 def get_url(release, os_version, salt_version, os_dist):
-    if 'redhat' in os_dist:
+    if 'redhat' in os_dist.lower():
         url_dist = 'yum/redhat/'
 
     branch = salt_version.rsplit('.', 1)[0]
