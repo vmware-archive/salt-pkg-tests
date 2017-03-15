@@ -1,6 +1,10 @@
 {# Import global parameters that source from grains and pillars #}
 {% import 'params.jinja' as params %}
 
+{% set branch = params.salt_version.rsplit('.', 1)[0] %}
+{% set srpms_pkg = 'salt-{0}{1}.el{2}.src.rpm'.format(params.salt_version, params.repo_pkg_version, params.os_major_release) %}
+{% set srpms_test = 'https://repo.saltstack.com/{0}/yum/redhat/{1}/x86_64/{2}/SRPMS/{3}'.format(params.dev, params.os_major_release, branch, srpms_pkg )  %}
+{% set srpms_run = '/root/salt-{0}{1}.el{2}.src.rpm'.format(params.salt_version, params.repo_pkg_version, params.os_major_release) %}
 
 # The top level cmd.run statements here are instructions to the salt-ssh minion,
 # not the salt being tested
@@ -96,3 +100,6 @@ salt-call:
       - salt-call --local state.apply states
       - salt-call --local sys.doc aliases.list_aliases
 
+check_srpms::
+  cmd.run:
+    - name: wget {{ srpms_test }}; rpm -ihv {{ srpms_run }}
