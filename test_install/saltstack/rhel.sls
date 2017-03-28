@@ -88,7 +88,7 @@ check_base_dir:
     - name: check-base-directory
     - source: salt://test_install/files/check_base_dir.py
 {% set staging = True if pillar['dev'] == 'staging' else False %}
-    {% if params.dev %}
+    {% if staging %}
     - args: "-v {{ params.salt_version }} -o {{ params.os_major_release }} -d {{ params.os_family }} -s"
     {% else %}
     - args: "-v {{ params.salt_version }} -o {{ params.os_major_release }} -d {{ params.os_family }}"
