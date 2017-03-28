@@ -14,12 +14,18 @@ def get_args():
                       help="Specify os distribution. For example redhat")
     parser.add_option("-v", "--salt-version",
                       help="Specify the version of salt")
+    parser.add_option("-s", "--staging",
+                      action="store_true",
+                      help="Specify the version of salt")
     return parser
 
-def get_url(release, os_version, salt_version, os_dist):
+def get_url(release, os_version, salt_version, os_dist, staging):
     if 'redhat' in os_dist.lower():
         url_dist = 'yum/redhat/'
-
+    if staging:
+        root_url = 'https://repo.saltstack.com/staging/'
+    else:
+        root_url = 'https://repo.saltstack.com/'
     branch = salt_version.rsplit('.', 1)[0]
     release_map = {
         'latest': 'latest',
@@ -29,7 +35,7 @@ def get_url(release, os_version, salt_version, os_dist):
 
     release_type = release_map.get(release)
 
-    url = 'https://repo.saltstack.com/' + url_dist + os_version + '/x86_64/' + release_type + '/base/'
+    url = root_url + url_dist + os_version + '/x86_64/' + release_type + '/base/'
     return url
 
 def check_url(url):
@@ -58,7 +64,8 @@ def main():
     releases = ['latest', 'major', 'minor']
 
     for release in releases:
-        url = get_url(release, args.os_version, args.salt_version, args.os_dist)
+        url = get_url(release, args.os_version, args.salt_version,
+                      args.os_dist, args.staging)
         url_status = check_url(url)
         if not url_status:
             failure.append(url)
