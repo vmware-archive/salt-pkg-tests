@@ -105,3 +105,12 @@ check_srpms::
   cmd.run:
     - name: wget {{ srpms_test }}; rpm -ihv {{ srpms_run }}
 {% endif %}
+
+services_enabled:
+  cmd.run:
+    - names:
+      - salt {{ params.minion_id }} service.enabled salt-master
+      - salt {{ params.minion_id }} service.enabled salt-minion
+      - salt {{ params.minion_id }} service.enabled salt-syndic
+      - salt {{ params.minion_id }} service.enabled salt-api
+
