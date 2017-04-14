@@ -5,6 +5,7 @@
 {% set srpms_pkg = 'salt-{0}-1.el{2}.src.rpm'.format(params.salt_version, params.repo_pkg_version, params.os_major_release) %}
 {% set srpms_test = 'https://repo.saltstack.com/{0}/yum/redhat/{1}/x86_64/archive/{2}/SRPMS/{3}'.format(params.dev, params.os_major_release, params.salt_version, srpms_pkg )  %}
 {% set srpms_run = '/root/salt-{0}-1.el{2}.src.rpm'.format(params.salt_version, params.repo_pkg_version, params.os_major_release) %}
+{% set services = ['salt-master', 'salt-minion', 'salt-syndic', 'salt-api'] %}
 
 # The top level cmd.run statements here are instructions to the salt-ssh minion,
 # not the salt being tested
@@ -106,11 +107,15 @@ check_srpms::
     - name: wget {{ srpms_test }}; rpm -ihv {{ srpms_run }}
 {% endif %}
 
-services_enabled:
+{% for service in services %}
+check_services_enabled_{{ service }}:
+  service.enabled:
+    - name: {{ service }}
+
+run_if_changes_{{ service }}:
   cmd.run:
-    - names:
-      - salt {{ params.minion_id }} service.enabled salt-master
-      - salt {{ params.minion_id }} service.enabled salt-minion
-      - salt {{ params.minion_id }} service.enabled salt-syndic
-      - salt {{ params.minion_id }} service.enabled salt-api
+    - name: failtest service is enabled
+    - onchanges:
+      - service: check_services_enabled_{{ service }}
+{% endfor %}
 
