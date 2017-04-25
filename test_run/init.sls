@@ -100,7 +100,7 @@ salt-call:
       - salt-call --local state.apply states
       - salt-call --local sys.doc aliases.list_aliases
 
-{% if params.os_family == 'RedHat' and params.os == 'Redhat' or params.os == 'CentOS' %}
+{% if params.os_family == 'RedHat' %}
 check_srpms:
   cmd.run:
     - name: wget {{ srpms_test }}; rpm -ihv {{ srpms_run }}
