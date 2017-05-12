@@ -78,12 +78,22 @@ sleep_{{ action }}_{{ host }}:
 {% endif %}
 
 {% if 'python26' in host %}
+  {% if 'arch' in host %}
+install_python_{{ action }}:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ orch_master }}
+    - arg:
+      - salt-ssh {{ host }} -ir "pacman -S python2 --noconfirm"
+
+  {% else %}
 install_python_{{ action }}:
   salt.function:
     - name: cmd.run
     - tgt: {{ orch_master }}
     - arg:
       - salt-ssh {{ host }} -ir "mv /var/lib/rpm/Pubkeys /tmp/; rpm --rebuilddb; yum -y install epel-release; yum -y install python26-libs; yum -y install libffi; yum -y install python26"
+  {% endif %}
 {% endif %}
 
 verify_host_{{ action }}_{{ host }}:
@@ -96,7 +106,7 @@ verify_host_{{ action }}_{{ host }}:
 {%- endmacro %}
 
 
-{% macro install_bootstrap(salt_version, action='None', upgrade_val='False') -%}
+{% macro install_bootstrap(salt_version, install_version, cmd_args, action='None') -%}
 test_install_{{ action }}:
   salt.state:
     - tgt: {{ hosts }}
@@ -120,20 +130,19 @@ clean_up_known_hosts_{{ action }}:
     - name: ssh.rm_known_host
     - arg:
       - root
-      - {{ host }}
+      - {{ host.lower() }}
 
 {% endfor %}
 {%- endmacro %}
 
 {{ create_vm(action='clean') }}
 
+{% set cmd_args = False %}
 {% if install == 'git' %}
-  {% set cmd_args = 'git {0}'.format(salt_version) %}
-  {{ install_bootstrap(salt_version, install='git') }}
-{% elif install == 'stable' %}
-  {% set cmd_args = '' %}
-  {{ install_bootstrap(salt_version, install='stable') }}
+  {% set cmd_args = 'git v{0}'.format(salt_version) %}
 {% endif %}
+
+{{ install_bootstrap(salt_version, install_version, cmd_args, action='install_bootstrap') }}
 
 {{ clean_up(action='clean') }}
 {{ destroy_vm(action='clean') }}

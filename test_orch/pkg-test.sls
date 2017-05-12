@@ -163,7 +163,7 @@ clean_up_known_hosts_{{ action }}:
     - name: ssh.rm_known_host
     - arg:
       - root
-      - {{ host }}
+      - {{ host.lower() }}
 
 {% endfor %}
 {%- endmacro %}
