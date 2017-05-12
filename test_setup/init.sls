@@ -1,6 +1,17 @@
 {# Import global parameters that source from grains and pillars #}
 {% import 'params.jinja' as params %}
 
+{# This is a current workaround for fips issue documented here: https://github.com/saltstack/salt/issues/40890 #}
+{% set fips_enabled = salt['cmd.run']('cat /proc/sys/crypto/fips_enabled') %}
+
+{% if fips_enabled == '1' %}
+fips_workaround:
+  cmd.run:
+    - names:
+      - rpm -e --nodeps python2-pycryptodomex
+      - yum install python-crypto -y
+{% endif %}
+
 {% if params.on_smartos %}
 {% set update_path = salt['environ.get']('PATH', '') + ':/opt/salt/bin/' %}
 add_saltkey_path:
