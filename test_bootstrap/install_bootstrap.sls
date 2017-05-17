@@ -8,7 +8,11 @@
   {% set script_source = 'https://bootstrap.saltstack.com' %}
 {% endif %}
 
-test:
+install_curl:
+  pkg.installed:
+    - name: curl
+
+get_bootstrap:
   cmd.run:
     - name: curl {{ script_source }} -o {{ bootstrap_script }}; chmod 700 {{ bootstrap_script }}
 
