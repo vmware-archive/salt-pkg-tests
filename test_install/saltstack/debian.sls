@@ -19,11 +19,9 @@
 {% endif %}
 {% set repo_url = 'http://' + repo_url.split('https://')[1] %}
 
-{% if params.os == 'Raspbian' %}
 install-python-apt:
   pkg.installed:
     - name: python-apt
-{% endif %}
 
 pre_update-package-database:
   module.run:
