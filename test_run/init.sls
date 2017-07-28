@@ -100,28 +100,27 @@ salt-call:
 {% set srpms_test = False %}
 {% if params.os == 'RedHat' or params.os == 'CentOS' %}
     {% set srpms_pkg = 'salt-{0}-1.el{2}.src.rpm'.format(params.salt_version, params.repo_pkg_version, params.os_major_release) %}
-    {% set srpms_test = 'https://repo.saltstack.com/{0}/yum/redhat/latest/x86_64/archive/{1}/SRPMS/{2}'.format(params.dev, params.salt_version, srpms_pkg) %}
+    {% set srpms_test = 'https://repo.saltstack.com/{0}/yum/redhat/{1}/x86_64/latest/SRPMS/{2}'.format(params.dev, params.os_major_release, srpms_pkg) %}
     {% set srpms_run = '/root/salt-{0}-1.el{2}.src.rpm'.format(params.salt_version, params.repo_pkg_version, params.os_major_release) %}
 {% elif params.os == 'Amazon' %}
     {% set srpms_pkg = 'salt-{0}-1.amzn1.src.rpm'.format(params.salt_version) %}
-    {% set srpms_test = 'https://repo.saltstack.com/{0}/yum/amazon/latest/x86_64/archive/{1}/SRPMS/{2}'.format(params.dev, params.salt_version, srpms_pkg) %}
+    {% set srpms_test = 'https://repo.saltstack.com/{0}/yum/amazon/latest/x86_64/latest/SRPMS/{1}'.format(params.dev, srpms_pkg) %}
     {% set srpms_run = '/root/salt-{0}-1.amzn1.src.rpm'.format(params.salt_version) %}
 {% endif %}
 
 {% if srpms_test %}
 check_srpms:
   cmd.run:
-    - name: wget {{ srpms_test }}; rpm -ihv {{ srpms_run }}
+    - names:
+      - yum -y install wget
+      - wget {{ srpms_test }}; rpm -ihv {{ srpms_run }}
 {% endif %}
 
 {# Check if Services are enabled/disabled #}
-          
-{% if params.os_family == 'RedHat' and params.os_major_release == '7' or params.os == 'Fedora' %}
+
+{% if params.os_family == 'RedHat' %}
     {% set services_enabled = [] %}
     {% set services_disabled = ['salt-master', 'salt-minion', 'salt-syndic', 'salt-api'] %}
-{% elif params.os_family == 'RedHat' and params.os_major_release == '6' or params.os == 'Amazon' %}
-    {% set services_enabled  = ['salt-master', 'salt-minion'] %}
-    {% set services_disabled = ['salt-api', 'salt-syndic'] %}
 {% else %}
     {% set services_enabled = ['salt-master', 'salt-minion', 'salt-syndic', 'salt-api'] %}
     {% set services_disabled = [] %}
