@@ -59,6 +59,9 @@
 {# When using SaltStack repos, decide whether to use the 'latest' repo #}
 {% set use_latest = pillar.get('latest', False) %}
 {% set repo_version = 'latest' if use_latest else salt_version %}
+{% set repo_user= pillar.get('repo_user', '') %}
+{% set repo_passwd = pillar.get('repo_passwd', '') %}
+{% set repo_auth = repo_user + ':' + repo_passwd + '@' %}
 
 {# Set minion ID used for master<->local minion testing #}
 {% set minion_id = '{0}'.format(grains.get('id')) %}
