@@ -5,7 +5,7 @@
 {% set branch = params.salt_version.rsplit('.', 1)[0] %}
 
 {% if params.use_latest %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}yum/amazon/latest/$basearch/latest'.format(params.dev) %}
+  {% set repo_url = 'https://{0}repo.saltstack.com/{1}yum/amazon/latest/$basearch/latest'.format(params.repo_auth, params.dev) %}
   {% set repo_pkg = 'salt-amzn-repo-{0}{1}.amzn1.noarch.rpm'.format(branch, params.repo_pkg_version) %}
   {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/amazon/{1}'.format(params.dev, repo_pkg) %}
 {% elif params.test_rc_pkgs %}
@@ -13,15 +13,15 @@
   {% set repo_pkg = 'salt-amzn-repo-{0}{1}.amzn1.noarch.rpm'.format(branch, params.repo_pkg_version) %}
   {% set repo_pkg_url = 'https://repo.saltstack.com/{0}salt_rc/yum/amazon/{1}'.format(params.dev, repo_pkg) %}
 {% elif branch == '2016.3' %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/6/$basearch/archive/{1}' %}
-  {% set repo_url = repo_url.format(params.dev, params.salt_version) %}
+  {% set repo_url = 'https://{0}repo.saltstack.com/{1}yum/redhat/6/$basearch/archive/{2}' %}
+  {% set repo_url = repo_url.format(params.repo_auth, params.dev, params.salt_version) %}
   {% set repo_pkg = 'salt-amzn-repo-{0}{1}.ami.noarch.rpm'.format(branch, params.repo_pkg_version) %}
-  {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/amazon/{1}'.format(params.dev, repo_pkg) %}
+  {% set repo_pkg_url = 'https://{0}repo.saltstack.com/{1}yum/amazon/{2}'.format(params.repo_auth, params.dev, repo_pkg) %}
 {% else %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}yum/amazon/latest/$basearch/archive/{1}' %}
-  {% set repo_url = repo_url.format(params.dev, params.salt_version) %}
+  {% set repo_url = 'https://{0}repo.saltstack.com/{1}yum/amazon/latest/$basearch/archive/{2}' %}
+  {% set repo_url = repo_url.format(params.repo_auth, params.dev, params.salt_version) %}
   {% set repo_pkg = 'salt-amzn-repo-{0}{1}.amzn1.noarch.rpm'.format(branch, params.repo_pkg_version) %}
-  {% set repo_pkg_url = 'https://repo.saltstack.com/{0}yum/amazon/{1}'.format(params.dev, repo_pkg) %}
+  {% set repo_pkg_url = 'https://{0}repo.saltstack.com/{1}yum/amazon/{2}'.format(params.repo_auth, params.dev, repo_pkg) %}
 {% endif %}
 
 {% set key_name = 'SALTSTACK-GPG-KEY.pub' %}

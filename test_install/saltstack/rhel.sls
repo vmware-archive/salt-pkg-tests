@@ -19,12 +19,12 @@
 {% set release = 6 if params.on_amazon else '$releasever' %}
 
 {% if params.use_latest %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}/$basearch/latest'.format(params.dev, release) %}
+  {% set repo_url = 'https://{0}repo.saltstack.com/{1}yum/redhat/{2}/$basearch/latest'.format(params.repo_auth, params.dev, release) %}
 {% elif params.test_rc_pkgs %}
   {% set repo_url = 'https://repo.saltstack.com/{0}salt_rc/yum/redhat/{1}/$basearch'.format(params.dev, release) %}
 {% else %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}yum/redhat/{1}/$basearch/archive/{2}' %}
-  {% set repo_url = repo_url.format(params.dev, release, params.salt_version) %}
+  {% set repo_url = 'https://{0}repo.saltstack.com/{1}yum/redhat/{2}/$basearch/archive/{3}' %}
+  {% set repo_url = repo_url.format(params.repo_auth, params.dev, release, params.salt_version) %}
 {% endif %}
 
 {% set key_name = 'SALTSTACK-EL5-GPG-KEY.pub' if params.on_rhel_5 else 'SALTSTACK-GPG-KEY.pub' %} 

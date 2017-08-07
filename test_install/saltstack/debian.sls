@@ -2,14 +2,14 @@
 {% import 'params.jinja' as params %}
 
 {% if params.use_latest %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}apt/debian/{1}/{2}/latest' %}
-  {% set repo_url = repo_url.format(params.dev, params.os_major_release, params.os_arch) %}
+  {% set repo_url = 'https://{0}repo.saltstack.com/{1}apt/debian/{2}/{3}/latest' %}
+  {% set repo_url = repo_url.format(params.repo_auth, params.dev, params.os_major_release, params.os_arch) %}
 {% elif params.test_rc_pkgs %}
   {% set repo_url = 'https://repo.saltstack.com/{0}salt_rc/apt/debian/{1}/{2}/' %}
   {% set repo_url = repo_url.format(params.dev, params.os_major_release, params.os_arch) %}
 {% else %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}apt/debian/{1}/{2}/archive/{3}' %}
-  {% set repo_url = repo_url.format(params.dev, params.os_major_release, params.os_arch, params.salt_version) %}
+  {% set repo_url = 'https://{0}repo.saltstack.com/{1}apt/debian/{2}/{3}/archive/{4}' %}
+  {% set repo_url = repo_url.format(params.repo_auth, params.dev, params.os_major_release, params.os_arch, params.salt_version) %}
 {% endif %}
 
 {% set key_url = '{0}/SALTSTACK-GPG-KEY.pub'.format(repo_url) %}
@@ -17,13 +17,10 @@
 {% if params.on_deb_7 %}
 {% set key_url = 'http://' + key_url.split('https://')[1] %}
 {% endif %}
-{% set repo_url = 'http://' + repo_url.split('https://')[1] %}
 
-{% if params.os == 'Raspbian' %}
 install-python-apt:
   pkg.installed:
     - name: python-apt
-{% endif %}
 
 pre_update-package-database:
   module.run:
