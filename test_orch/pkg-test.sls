@@ -14,6 +14,8 @@
 {% set upgrade = salt['pillar.get']('upgrade', '') %}
 {% set clean = salt['pillar.get']('clean', '') %}
 {% set repo = salt['pillar.get']('repo', '') %}
+{% set repo_user = salt['pillar.get']('repo_user', '') %}
+{% set repo_passwd = salt['pillar.get']('repo_passwd', '') %}
 {% set wait_for_dns = salt['pillar.get']('wait_for_dns', 'False') %}
 
 <%!
@@ -122,6 +124,8 @@ test_install_{{ action }}:
         latest: {{ latest }}
         repo_pkg: {{ repo_pkg }}
         upgrade: {{ upgrade_val }}
+        repo_user: {{ repo_user }}
+        repo_passwd: {{ repo_passwd }}
 
 {% if upgrade_val == 'False' %}
 test_setup_{{ action }}:
@@ -151,6 +155,8 @@ test_run_{{ action }}:
     - pillar:
         salt_version: {{ salt_version }}
         dev: {{ dev }}
+        repo_user: {{ repo_user }}
+        repo_passwd: {{ repo_passwd }}
 {%- endmacro %}
 
 {% macro clean_up(action='None') -%}

@@ -97,14 +97,15 @@ salt-call:
       - salt-call --local state.apply states
       - salt-call --local sys.doc aliases.list_aliases
 
+
 {% set srpms_test = False %}
 {% if params.os == 'RedHat' or params.os == 'CentOS' %}
     {% set srpms_pkg = 'salt-{0}-1.el{2}.src.rpm'.format(params.salt_version, params.repo_pkg_version, params.os_major_release) %}
-    {% set srpms_test = 'https://repo.saltstack.com/{0}/yum/redhat/{1}/x86_64/latest/SRPMS/{2}'.format(params.dev, params.os_major_release, srpms_pkg) %}
+    {% set srpms_test = 'https://{0}repo.saltstack.com/{1}/yum/redhat/{2}/x86_64/archive/{3}/SRPMS/{4}'.format(params.repo_auth, params.dev, params.os_major_release, params.salt_version, srpms_pkg) %}
     {% set srpms_run = '/root/salt-{0}-1.el{2}.src.rpm'.format(params.salt_version, params.repo_pkg_version, params.os_major_release) %}
 {% elif params.os == 'Amazon' %}
     {% set srpms_pkg = 'salt-{0}-1.amzn1.src.rpm'.format(params.salt_version) %}
-    {% set srpms_test = 'https://repo.saltstack.com/{0}/yum/amazon/latest/x86_64/latest/SRPMS/{1}'.format(params.dev, srpms_pkg) %}
+    {% set srpms_test = 'https://{0}repo.saltstack.com/{1}/yum/amazon/latest/x86_64/archive/{2}/SRPMS/{3}'.format(params.repo_auth, params.dev, params.salt_version, srpms_pkg) %}
     {% set srpms_run = '/root/salt-{0}-1.amzn1.src.rpm'.format(params.salt_version) %}
 {% endif %}
 

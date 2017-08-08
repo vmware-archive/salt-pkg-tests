@@ -17,15 +17,23 @@ def get_args():
     parser.add_option("-s", "--staging",
                       action="store_true",
                       help="Specify the version of salt")
+    parser.add_option('-u', '--user',
+                      help='Specify the user to auth with repo')
+    parser.add_option('-p', '--passwd',
+                      help='Specify the password to auth with repo')
+
     return parser
 
-def get_url(release, os_version, salt_version, os_dist, staging):
+def get_url(release, os_version, salt_version, os_dist, staging, user=None, passwd=None):
     if 'redhat' in os_dist.lower():
         url_dist = 'yum/redhat/'
+
+
+    root_url = 'https://repo.saltstack.com/'
     if staging:
-        root_url = 'https://repo.saltstack.com/staging/'
-    else:
-        root_url = 'https://repo.saltstack.com/'
+        root_url = 'https://{0}:{1}@repo.saltstack.com/staging/'.format(user, passwd)
+
+
     branch = salt_version.rsplit('.', 1)[0]
     release_map = {
         'latest': 'latest',
@@ -65,7 +73,7 @@ def main():
 
     for release in releases:
         url = get_url(release, args.os_version, args.salt_version,
-                      args.os_dist, args.staging)
+                      args.os_dist, args.staging, user=args.user, passwd=args.passwd)
         url_status = check_url(url)
         if not url_status:
             failure.append(url)
