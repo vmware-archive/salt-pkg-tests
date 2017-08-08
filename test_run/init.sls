@@ -127,6 +127,7 @@ check_srpms:
     {% set services_disabled = [] %}
 {% endif %}
 
+{% if '2016' not in params.salt_version %}
 {% for service in services_enabled %}
 
 check_services_enabled_{{ service }}:
@@ -150,3 +151,4 @@ run_if_changes_{{ service }}:
     - onchanges:
       - service: check_services_disabled_{{ service }}
 {% endfor %}
+{% endif %}
