@@ -24,6 +24,14 @@ def get_args():
         '-b', '--branch',
         help='Specify the salt branch'
     )
+    parser.add_argument(
+        '-u', '--user',
+        help='Specify the user to auth with repo'
+    )
+    parser.add_argument(
+        '-p', '--passwd',
+        help='Specify the password to auth with repo'
+    )
 
     return parser
 
@@ -38,6 +46,8 @@ def get_url(args):
         os_v = args.os[-1:]
 
     repo_url = 'https://repo.saltstack.com/'
+    if args.user:
+        repo_url = 'https://{0}:{1}@repo.saltstack.com/'.format(args.user, args.passwd)
 
     amazon_url = 'yum/amazon/'
     redhat_url = 'yum/redhat/'
@@ -88,6 +98,10 @@ def set_env_vars(**kwargs):
 
 def get_salt_version(url):
     get_url = requests.get(url)
+    ret_code = get_url.status_code
+    if ret_code != 200:
+        print('Attempt to query url failed with http error code: {0}'.format(ret_code))
+        sys.exit(1)
     html = get_url.content
     parse_html = bsoup(html)
 
