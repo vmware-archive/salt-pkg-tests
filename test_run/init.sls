@@ -31,11 +31,17 @@ versions:
       - salt --versions-report
       - salt {{ params.minion_id }} test.versions_report
 
-compare_versions:
-  cmd.script:
+check_cmd_file:
+  file.managed:
     - name: /tmp/check_cmd_returns.py
     - source: salt://test_run/files/check_cmd_returns.py
-    - args: "-m {{ params.minion_id }} -v {{ params.salt_version }}"
+
+
+compare_versions:
+  cmd.run:
+    - name: "{{ params.python_version }} /tmp/check_cmd_returns.py -m {{ params.minion_id }} -v {{ params.salt_version }}"
+    - require:
+      - file: check_cmd_file
 
 grains:
   cmd.run:
@@ -97,16 +103,21 @@ salt-call:
       - salt-call --local state.apply states
       - salt-call --local sys.doc aliases.list_aliases
 
-
 {% set srpms_test = False %}
 {% if params.os == 'RedHat' or params.os == 'CentOS' %}
     {% set srpms_pkg = 'salt-{0}-1.el{2}.src.rpm'.format(params.salt_version, params.repo_pkg_version, params.os_major_release) %}
     {% set srpms_test = 'https://{0}repo.saltstack.com/{1}/yum/redhat/{2}/x86_64/archive/{3}/SRPMS/{4}'.format(params.repo_auth, params.dev, params.os_major_release, params.salt_version, srpms_pkg) %}
-    {% set srpms_run = '/root/salt-{0}-1.el{2}.src.rpm'.format(params.salt_version, params.repo_pkg_version, params.os_major_release) %}
+    {% set srpms_run = '/root/{0}'.format(srpms_pkg) %}
 {% elif params.os == 'Amazon' %}
+  {% if branch == '2016.3' %}
+    {% set srpms_pkg = 'salt-{0}-1.el6.src.rpm'.format(params.salt_version) %}
+    {% set srpms_test = 'https://{0}repo.saltstack.com/{1}/yum/redhat/6/x86_64/archive/{2}/SRPMS/{3}'.format(params.repo_auth, params.dev, params.salt_version, srpms_pkg) %}
+    {% set srpms_run = '/root/{0}'.format(srpms_pkg) %}
+  {% else %}
     {% set srpms_pkg = 'salt-{0}-1.amzn1.src.rpm'.format(params.salt_version) %}
     {% set srpms_test = 'https://{0}repo.saltstack.com/{1}/yum/amazon/latest/x86_64/archive/{2}/SRPMS/{3}'.format(params.repo_auth, params.dev, params.salt_version, srpms_pkg) %}
-    {% set srpms_run = '/root/salt-{0}-1.amzn1.src.rpm'.format(params.salt_version) %}
+    {% set srpms_run = '/root/{0}'.format(srpms_pkg) %}
+  {% endif %}
 {% endif %}
 
 {% if srpms_test %}
