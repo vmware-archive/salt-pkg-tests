@@ -28,6 +28,18 @@
 {# if there is a patch to a package you can use repo_pkg_version to specify a different package version. ie 2015.8.8.2 #}
 {% set repo_pkg_version = '-' + pillar.get('repo_pkg_version', '') %}
 
+{# Python versions #}
+{% set python_version = 'python' %}
+{% if '2016' not in salt_version %}
+  {% if os_major_release == '6' %}
+    {% set python_version = 'python2.7' %}
+  {% endif %}
+{% else %}
+  {% if os == 'Amazon' %}
+    {% set python_version = 'python2.6' %}
+  {% endif %}
+{% endif %}
+
 {# Create a versioned package set to work around pkg.installed bugs #}
 {% set version_token = '=' if os_family == 'Debian' else '-' %}
 {% set versioned_pkgs = [] %}
