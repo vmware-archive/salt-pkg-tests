@@ -53,7 +53,7 @@ upgrade-salt:
 
 install-salt:
   cmd.run:
-    - name: apt-get -y install {{ params.pkgs | join(' ') }}
+    - name: apt-get -y install {{ params.versioned_pkgs | join(' ') }}
     - require:
       - module: update-package-database
 
