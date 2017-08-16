@@ -2,6 +2,7 @@
 {# Import global parameters that source from grains and pillars #}
 {% import 'params.jinja' as params %}
 
+{% set on_rhel_6 = True if os_family == 'RedHat' and os_major_release == '6' else False %}
 {% set key_timeout = pillar.get('key_timeout', '30') %}
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
 {% set cloud_profile = salt['pillar.get']('cloud_profile', '') %}
@@ -137,9 +138,14 @@ clean_up_known_hosts_{{ action }}:
 
 {{ create_vm(action='clean') }}
 
+{% set script_args = '' %}
+{% if on_rhel_6 %}
+  {% set script_args = '-P -y -x python2.7'
+{% endif %}
+
 {% set cmd_args = False %}
 {% if install == 'git' %}
-  {% set cmd_args = 'git v{0}'.format(salt_version) %}
+  {% set cmd_args = '{0} git v{1}'.format(script_args, salt_version) %}
 {% endif %}
 
 {{ install_bootstrap(salt_version, install_version, cmd_args, action='install_bootstrap') }}
