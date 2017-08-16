@@ -142,7 +142,7 @@ clean_up_known_hosts_{{ action }}:
 
 {% set script_args = '' %}
 {% if on_rhel_6 %}
-  {% set script_args = '-P -y -x python2.7'
+  {% set script_args = '-P -y -x python2.7' %}
 {% endif %}
 
 {% set cmd_args = False %}
