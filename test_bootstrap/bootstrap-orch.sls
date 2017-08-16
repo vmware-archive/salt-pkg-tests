@@ -2,6 +2,8 @@
 {# Import global parameters that source from grains and pillars #}
 {% import 'params.jinja' as params %}
 
+{% set os_family = grains.get('os_family', '')  %}
+{% set os_major_release = grains.get('osmajorrelease', '') %}
 {% set on_rhel_6 = True if os_family == 'RedHat' and os_major_release == '6' else False %}
 {% set key_timeout = pillar.get('key_timeout', '30') %}
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
