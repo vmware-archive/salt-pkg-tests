@@ -35,10 +35,6 @@
   {% if os_major_release == '6' %}
     {% set python_version = 'python2.7' %}
   {% endif %}
-{% else %}
-  {% if os == 'Amazon' %}
-    {% set python_version = 'python2.6' %}
-  {% endif %}
 {% endif %}
 
 {# Create a versioned package set to work around pkg.installed bugs #}
