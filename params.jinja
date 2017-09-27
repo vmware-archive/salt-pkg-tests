@@ -32,7 +32,7 @@
 {# Python versions #}
 {% set python_version = 'python' %}
 {% if '2016' not in salt_version %}
-  {% if os_major_release == '6' %}
+  {% if os_major_release == 6 %}
     {% set python_version = 'python2.7' %}
   {% endif %}
 {% endif %}
