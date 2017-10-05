@@ -107,3 +107,17 @@
 
 {# Miscellaneous options #}
 {% set key_timeout = pillar.get('key_timeout', '30') %}
+
+{# orchestration runner variables #}
+{% set clean = salt['pillar.get']('clean', '') %}
+{% set cloud_profile = salt['pillar.get']('cloud_profile', '') %}
+{% set hosts = [] %}
+{% set orch_master = salt['pillar.get']('orch_master', '') %}
+{% set username = salt['pillar.get']('username', '') %}
+
+{# orchestration runner solaris specific variables #}
+{% set solarism_user = salt['pillar.get']('solarism_user') %}
+{% set solarism_passwd = salt['pillar.get']('solarism_passwd') %}
+{% set solarism_host = salt['pillar.get']('solarism_host') %}
+{% set zone_pkgusr_passwd = salt['pillar.get']('zone_pkgusr_passwd') %}
+{% set zone_root_passwd = salt['pillar.get']('zone_root_passwd') %}

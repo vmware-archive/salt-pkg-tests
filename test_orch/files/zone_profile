@@ -1,0 +1,15 @@
+{% set host = salt['pillar.get']('host') %}
+create -b
+set brand=solaris
+set zonepath=/system/zones/{{ host }}
+set autoboot=true
+set autoshutdown=shutdown
+set bootargs="-m verbose"
+set ip-type=exclusive
+add anet
+set linkname=net0
+set lower-link=auto
+set configure-allowed-address=true
+set link-protection=mac-nospoof
+set mac-address=auto
+end
