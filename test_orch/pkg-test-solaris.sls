@@ -80,10 +80,56 @@ install_zone:
     - arg:
       - zoneadm -z {{ host }} clone -c /tmp/{{ zone_template }}.xml testzone
 
+boot_zone:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ solaris_master }}
+    - tgt_type: list
+    - ssh: True
+    - arg:
+      - zoneadm -z {{ host }} boot
+
+
 {% endfor %}
 {%- endmacro %}
 
+{% macro destroy_vm(action='None') -%}
+{% for profile in params.cloud_profile %}
+{% set host = params.username + profile + rand_name %}
+{% do params.hosts.append(host) %}
+{% set solaris_master = host + '-master' %}
+
+shutdown_zone:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ solaris_master }}
+    - tgt_type: list
+    - ssh: True
+    - arg:
+      - zoneadm -z {{ host }} shutdown
+
+remove_zone_filesystem:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ solaris_master }}
+    - tgt_type: list
+    - ssh: True
+    - arg:
+      - zoneadm -z {{ host }} uninstall -F
+
+remove_zone_configuration:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ solaris_master }}
+    - tgt_type: list
+    - ssh: True
+    - arg:
+      - zonecfg -z {{ host }} delete -F
+{% endfor %}
+{% endmacro %}
+
+
 {% if params.clean %}
 {{ create_vm(action='clean') }}
+{#{{ destroy_vm(action='clean') }}#}
 {% endif %}
-
