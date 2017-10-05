@@ -1,4 +1,4 @@
-{% set host = salt['pillar.get']('host') %}
+{%- set host = salt['pillar.get']('host') -%}
 create -b
 set brand=solaris
 set zonepath=/system/zones/{{ host }}
