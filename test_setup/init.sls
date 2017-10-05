@@ -5,11 +5,10 @@
 {% set fips_enabled = salt['cmd.run']('cat /proc/sys/crypto/fips_enabled') %}
 
 {% if fips_enabled == '1' %}
-fips_workaround:
+fips_is_enabled:
   cmd.run:
     - names:
-      - rpm -e --nodeps python2-pycryptodomex
-      - yum install python-crypto -y
+      - echo testing_fips
 {% endif %}
 
 {% if params.on_smartos %}
