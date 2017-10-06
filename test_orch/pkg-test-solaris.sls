@@ -89,7 +89,32 @@ boot_zone:
     - arg:
       - zoneadm -z {{ host }} boot
 
+sleep_while_zone_boots:
+  salt.function:
+    - name: test.sleep
+    - tgt: {{ params.orch_master }}
+    - arg:
+      - 200
 
+add_solaris_minion_to_roster:
+  salt.state:
+    - tgt: {{ params.orch_master }}
+    - tgt_type: list
+    - concurrent: True
+    - sls:
+      - test_orch.states.get_solaris_min_ip
+    - timeout: 200
+    - pillar:
+        solarismin_user: {{ params.solarismin_user }}
+        solarismin_passwd: {{ params.solarismin_passwd }}
+        host: {{ host }}
+
+verify_solaris_minion:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ orch_master }}
+    - arg:
+      - salt-ssh {{ host }} -i test.ping
 {% endfor %}
 {%- endmacro %}
 

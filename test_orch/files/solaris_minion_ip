@@ -1,0 +1,9 @@
+{%- set host = salt['pillar.get']('host') -%}
+{%- set solarismin_user = salt['pillar.get']('solarismin_user') -%}
+{%- set solarismin_passwd = salt['pillar.get']('solarismin_passwd') -%}
+{{ host }}:
+  host: {{ solarismin_ip }}
+  user: {{ solarismin_user }}
+  passwd: {{ solarismin_passwd }}
+  sudo: True
+  tty: True

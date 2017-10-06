@@ -121,3 +121,7 @@
 {% set solarism_host = salt['pillar.get']('solarism_host') %}
 {% set zone_pkgusr_passwd = salt['pillar.get']('zone_pkgusr_passwd') %}
 {% set zone_root_passwd = salt['pillar.get']('zone_root_passwd') %}
+
+{# solaris minion created in a zone variables #}
+{%- set solarismin_user = salt['pillar.get']('solarismin_user') -%}
+{%- set solarismin_passwd = salt['pillar.get']('solarismin_passwd') -%}
