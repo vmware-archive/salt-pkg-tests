@@ -84,13 +84,13 @@ sleep_{{ action }}_{{ host }}:
       - salt: verify_host_{{ action }}_{{ host }}
 {% endif %}
 
-{% if 'python26' in host %}
+{% if 'python27' in host %}
 install_python_{{ action }}:
   salt.function:
     - name: cmd.run
     - tgt: {{ orch_master }}
     - arg:
-      - salt-ssh {{ host }} -ir "mv /var/lib/rpm/Pubkeys /tmp/; rpm --rebuilddb; yum -y install epel-release; yum -y install python26-libs; yum -y install libffi; yum -y install python26"
+      - salt-ssh {{ host }} -ir "yum -y install python2"
 {% endif %}
 
 verify_host_{{ action }}_{{ host }}:
