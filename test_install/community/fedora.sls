@@ -20,21 +20,17 @@ refresh_backup:
       - module: refresh
   {% if params.upgrade %}
     {% set install_cmd = 'dnf -y --enablerepo=updates-testing update' %}
-
-upgrade-salt:
-  cmd.run:
-    - name: {{ install_cmd }} {{ params.pkgs | join(' ') }}
-
-  {% else %}
-
-
-install_salt:
-  cmd.run:
-    - name: {{ install_cmd }} {{ versioned_pkgs }}
-    - requires:
-      - module: refresh
   {% endif %}
 
+{% for pkg in params.pkgs %}
+{% set pkg_name = pkg + '-' + params.salt_version + '-' + params.pkg_version + '.noarch.rpm' %}
+get-{{ pkg }}:
+  cmd.run:
+    - name: wget -O /tmp/{{ pkg_name }} {{ params.pkg_urls[pkg] }}
+{% endfor %}
+install-pkgs:
+  cmd.run:
+    - name: dnf -y install {{ params.pkg_files | join(' ') }}
 
 {# live install #}
 {% else %}

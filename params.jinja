@@ -6,8 +6,17 @@
 {% set os_code_name = grains.get('oscodename', '')  %}
 {% set os_arch = grains.get('osarch', '') %}
 
+{# Package set information: may need to be overridden for repos having nonstandard package sets #}
+{% set salt_version = pillar.get('salt_version', '') %}
+{% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
+{% do pkgs.append('salt-common') if os_family == 'Debian' %}
+{# if there is a patch to a package you can use repo_pkg_version to specify a different package version. ie 2015.8.8.2 #}
+{% set repo_pkg_version = '-' + pillar.get('repo_pkg_version', '') %}
+
+
 {# Fedora specific options #}
 {% set rh_version = pillar.get('rh_version', 'fc') %}
+{% set pkg_version = salt['pillar.get']('pkg_version', '1') %}
 {% set fed_pkg_version = pillar.get('fed_pkg_version', '1') %}
 
 {# Shorthand for specific platforms #}
@@ -15,19 +24,29 @@
 {% set on_deb_7 = True if os_family == 'Debian' and os_major_release == '7' else False %}
 {% set on_smartos = True if os == 'SmartOS' else False %}
 {% set on_amazon = True if os == 'Amazon' else False %}
+
+{# specific to fedora #}
 {% set on_fedora = os == 'Fedora' %}
+{% set url_base = 'https://kojipkgs.fedoraproject.org/packages/salt/' %}
+{% set pkg_name = '{0}.{1}{2}'.format(pkg_version, 'fc', os_major_release) %}
+{% set pkg_urls = {} %}
+
+
+{% do pkgs.append('salt') if on_fedora %}
+
+{% for pkg in pkgs %}
+  {% do pkg_urls.update({pkg: url_base + salt_version + '/' + pkg_name + '/noarch/' + pkg + '-' + salt_version + '-' + pkg_name + '.noarch.rpm'}) %}
+{% endfor %}
+{% set pkg_files = [] %}
+{% for pkg in pkgs %}
+  {% do pkg_files.append('/tmp/' + pkg + '-' + salt_version + '-' + pkg_version + '.noarch.rpm') %}
+{% endfor %}
 
 {# FreeBSD variables #}
 {% set repo_salt_fbsd = pillar.get('repo_salt_fbsd') %}
 {% set use_repo_salt_fbsd = True if repo_salt_fbsd else False %}
 {% set on_freebsd = True if os == 'FreeBSD' else False %}
 
-{# Package set information: may need to be overridden for repos having nonstandard package sets #}
-{% set salt_version = pillar.get('salt_version', '') %}
-{% set pkgs = ['salt-master', 'salt-minion', 'salt-api', 'salt-cloud', 'salt-ssh', 'salt-syndic'] %}
-{% do pkgs.append('salt-common') if os_family == 'Debian' %}
-{# if there is a patch to a package you can use repo_pkg_version to specify a different package version. ie 2015.8.8.2 #}
-{% set repo_pkg_version = '-' + pillar.get('repo_pkg_version', '') %}
 
 {# Python versions #}
 {% set python_version = 'python' %}
