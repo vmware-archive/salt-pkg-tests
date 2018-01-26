@@ -144,3 +144,8 @@
 {# solaris minion created in a zone variables #}
 {%- set solarismin_user = salt['pillar.get']('solarismin_user') -%}
 {%- set solarismin_passwd = salt['pillar.get']('solarismin_passwd') -%}
+
+{# salt-api variables #}
+{% set api_user = 'saltdev' %}
+{% set api_passwd = 'saltdev' %}
+{% set api_config = '/etc/salt/master' %}
