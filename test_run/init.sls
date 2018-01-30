@@ -2,7 +2,12 @@
 {% import 'params.jinja' as params %}
 
 include:
+{% if params.minion_only %}
+{# minion only #}
+  - test_run.minion_only
+{% else %}
   - test_run.master_minion
 {% if params.os in ('CentOS', 'Redhat', 'Amazon', 'Debian', 'Ubuntu') %}
   - test_run.api
+{% endif %}
 {% endif %}
