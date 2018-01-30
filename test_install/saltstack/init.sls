@@ -19,6 +19,10 @@
 
   {% set pkg_repo = params.pkg_repo or 'ubuntu' %}
 
+{% elif params.os == 'MacOS' %}
+
+  {% set pkg_repo = params.pkg_repo or 'macosx' %}
+
 {% endif %}
 
 # Route into selected SLS file containing the install states

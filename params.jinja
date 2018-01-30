@@ -55,6 +55,8 @@
     {% set python_version = 'python2.7' %}
   {% endif %}
 {% endif %}
+{% set python3 =  salt['pillar.get']('python3', False) %}
+{% set python_major_version = '3' if python3 else '2' %}
 
 {# Create a versioned package set to work around pkg.installed bugs #}
 {% set version_token = '=' if os_family == 'Debian' else '-' %}
@@ -97,7 +99,7 @@
 {% set repo_auth = repo_user + ':' + repo_passwd + '@' %}
 
 {# Set minion ID used for master<->local minion testing #}
-{% set minion_id = '{0}'.format(grains.get('id')) %}
+{% set minion_id = salt['pillar.get']('minion_id', '{0}'.format(grains.get('id'))) %}
 
 {# Smoke test the presence of these utilities #}
 {% set utils = ['salt', 'salt-api', 'salt-call', 'salt-cloud', 'salt-cp', 'salt-key', 'salt-master', 'salt-minion', 'salt-proxy', 'salt-run', 'salt-ssh', 'salt-syndic', 'salt-unity', 'spm'] %}
@@ -149,3 +151,9 @@
 {% set api_user = 'saltdev' %}
 {% set api_passwd = 'saltdev' %}
 {% set api_config = '/etc/salt/master' %}
+
+{# minion-only variables #}
+{% set master_host = salt['pillar.get']('master_host') %}
+{% set minion_utils = ['salt-call', 'salt-cp', 'salt-minion', 'salt-ssh', 'spm'] %}
+{% set minion_only = salt['pillar.get']('minion_only', False) %}
+{% set test_os = salt['pillar.get']('test_os', None) %}

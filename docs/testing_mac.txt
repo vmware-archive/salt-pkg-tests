@@ -1,0 +1,32 @@
+In order to test MacOSX currently it is semi-automated until we can automate the creation of a linux master and macosx minion.
+
+These are the steps to run tests against a macosx minion
+
+Step 1: Create MacOSX VM and Linux Master
+
+To create the MacOSX VM when using parallels you can run the following commands:
+
+salt-call --local parallels.clone vm-to-clone-from new-test-mac-vm linked=True runas=<user>
+salt-call --local parallels.start new-test-mac-vm runas=parallels
+salt-call --local parallels.exec new-test-mac-vm ifconfig runas=parallels
+
+Then bootstrap a Linux Master and install the same version of salt you are testing and keep note of the ip address of the Linux Master you will need it in the next step.
+
+Add the Linux Master host and MacOSX Minion to your salt-ssh roster
+
+Step 2: Run test_install, test_setup and test_run again MacOSX VM
+
+
+
+A1. salt-ssh 'mac-minion' state.sls test_install.saltstack pillar="{'salt_version': '2017.7.3', 'dev': 'staging', 'upgrade': False, 'clean': True, 'latest': False, 'repo': 'saltstack', 'test_rc_pkgs': False, 'repo_user': '<user>', 'repo_passwd': '<passwd>', 'master_host': '<ip of linux_master>', 'minion_id': 'mac-10.11.6-py2', 'minion_only': True, 'test_os': 'MacOS'}" -ldebug
+
+
+B1. sudo salt-ssh 'mac' state.sls test_setup pillar="{'salt_version': '2017.7.3', 'dev': 'staging', 'upgrade': False, 'clean': True, 'latest': False, 'repo': 'saltstack', 'test_rc_pkgs': False, 'repo_user': '<user>', 'repo_passwd': '<passwd>', 'master_host': '<ip of linux_master>', 'minion_id': 'mac-10.11.6-py2', 'minion_only': True, 'test_os': 'MacOS'}" -ldebug
+
+B2. Make sure to accept the new MacOSX minion key on the Linux Master: salt-key -a <minion>
+
+C1. salt-ssh 'linux-master' state.sls test_run pillar={'salt_version': '2017.7.3', 'dev': 'staging', 'upgrade': False, 'clean': True, 'latest': False, 'repo': 'saltstack', 'test_rc_pkgs': False, 'repo_user': '<user>', 'repo_passwd': '<passwd>', 'master_host': '<ip of linux_master>', 'minion_id': 'mac-10.11.6-py2', 'minion_only': True, 'test_os': 'MacOS'} -ldebug
+
+If you want to test an upgrade run steps A1-C1 and then again but only run A1 then C1 the next time to test the upgrade.
+
+NOTE: If you want to test python3 just add `python3': True to the pillar data
