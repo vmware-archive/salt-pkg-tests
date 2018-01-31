@@ -7,7 +7,7 @@ include:
   - test_setup.minion_only
 {% else %}
   - test_setup.master_minion
-{% if params.os in ('CentOS', 'Redhat', 'Amazon', 'Debian', 'Ubuntu') %}
+{% if params.os in ('CentOS', 'RedHat', 'Amazon', 'Debian', 'Ubuntu') %}
   - test_setup.api
 {% endif %}
 {% endif %}

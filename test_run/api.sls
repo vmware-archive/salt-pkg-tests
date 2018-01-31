@@ -7,5 +7,5 @@ query_api:
     - method: POST
     - header_list: '["Accept: application/json"]'
     - verify_ssl: False
-    - data: 'username={{ params.api_user }}&password={{ params.api_passwd }}&eauth=pam&client=local&tgt=*&fun=test.ping'
+    - data: 'username={{ params.api_user }}&password={{ params.api_passwd }}&eauth=pam&client=local&tgt=*&fun=test.ping&timeout=30'
     - status: 200
