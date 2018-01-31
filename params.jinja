@@ -150,7 +150,7 @@
 {# salt-api variables #}
 {% set api_user = 'saltdev' %}
 {% set api_passwd = 'saltdev' %}
-{% set api_config = '/etc/salt/master' %}
+{% set api_config = '/etc/salt/master.d/api.conf' %}
 
 {# minion-only variables #}
 {% set master_host = salt['pillar.get']('master_host') %}

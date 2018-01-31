@@ -157,6 +157,7 @@ test_run_{{ action }}:
         dev: {{ dev }}
         repo_user: {{ repo_user }}
         repo_passwd: {{ repo_passwd }}
+        upgrade: {{ upgrade_val }}
 {%- endmacro %}
 
 {% macro clean_up(action='None') -%}
