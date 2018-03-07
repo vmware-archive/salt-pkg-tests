@@ -6,12 +6,11 @@ import argparse
 import requests
 import re
 import os
-
-
+import tempfile
 
 # Miscellaneous variables
-TMP_DOCKER_DIR = os.path.join('/tmp', 'docker', "{{ rand_dir }}")
-LATEST = '2016.11'
+TMP_DIR = tempfile.mkdtemp()
+LATEST = '2017.7'
 
 check_steps = []
 os_tabs = ['tab1-debian', 'tab2-debian', 'tab3-debian', 'tab1-redhat',
@@ -24,6 +23,19 @@ def get_args():
         '-b', '--branch',
         help='Specific salt branch. Ex. 2016.3'
     )
+    parser.add_argument(
+        '-s', '--staging',
+        action='store_true',
+        help='Specific salt branch. Ex. 2016.3'
+    )
+    parser.add_argument(
+        '-v', '--salt-version',
+        help='Specific salt version. Ex. 2017.7.3'
+    )
+    parser.add_argument('-u', '--user',
+        help='Specify the user to auth with repo')
+    parser.add_argument('-p', '--passwd',
+        help='Specify the password to auth with repo')
 
     return parser
 
@@ -40,9 +52,9 @@ def det_os_family(os):
            }[os]
 
 def det_os_versions(os_v):
-    return {'debian': ['debian7', 'debian8'],
-            'redhat': ['redhat5', 'redhat6', 'redhat7'],
-            'ubuntu': ['ubuntu12', 'ubuntu14', 'ubuntu16'],
+    return {'debian': ['debian8', 'debian9'],
+            'redhat': ['redhat6', 'redhat7'],
+            'ubuntu': ['ubuntu14', 'ubuntu16'],
            }[os_v]
 
 def determine_release(current_os):
@@ -57,107 +69,128 @@ def determine_release(current_os):
         release='minor'
     return release
 
-def sanitize_steps(step, os_v):
+def _get_url(url):
+    print('Querying url: {0}'.format(url))
+    get_url = requests.get(url)
+    if get_url.status_code != 200:
+        raise Exception('url {0} did not return 200'.format(url))
+    return get_url
+
+def _get_dependencies(url):
+    version = args.salt_version.replace('.', '_')
+    os = url.split('/')[4]
+    os_version = url.split('/')[5].split('.')[0]
+    print('Determining dependencies for {0}'.format(os))
+    dep_sls = _get_url('https://raw.githubusercontent.com/saltstack/salt-pack/develop/file_roots/versions/{0}/{1}_pkg.sls'.format(version, os)).text
+    if 'redhat' in url:
+        os = 'rhel'
+    deps = [x.split('.')[1].split('-')[-1:][0] for x in re.findall('pkg.*.{0}{1}'.format(os, os_version), dep_sls)]
+
+    #remove comments
+    comments = re.findall('\#\#    \- pkg.*.*.{0}{1}'.format(os, os_version), dep_sls)
+    if comments:
+        for comment in comments:
+            deps.remove(comment.split('.')[1].split('-')[-1:][0])
+
+    remove_deps = ['importlib', 'pyzmq', 'ssl_match_hostname']
+    for removal in remove_deps:
+        # some of these deps are not in the repo, remove them from check
+        if removal in str(deps):
+            deps.remove(removal)
+    return deps
+
+def download_check(urls, salt_version, os, branch=None):
     '''
     helper method that will clean up the steps for automation
     '''
-    remove_steps = ['restart', 'saltstack.list', 'yum.repos.d/saltstack.repo',
-                   'python-', 'systemd', '[Service', 'Killmode']
-    text = (''.join(step.findAll(text=True)))
+    for url in urls:
+        if 'KEY' in url:
+            _get_url(url)
+        else:
+            pkgs = []
+            if 'apt' in url:
+                pkg_format = '_'
+                pkgs.append('salt-common{0}{1}'.format(pkg_format, salt_version))
+            if 'redhat' in url:
+                if 'rpm' in url:
+                    _get_url(url)
+                if '$releasever' in url:
+                    url = url.replace('$releasever', os_v[-1:]).replace('$basearch', 'x86_64') + salt_version
+                if 'archive' not in url:
+                    url = '/'.join(url.split('/')[:-1]) + '/' + os_v[-1:] + '/x86_64/' + branch
+                pkg_format = '-'
+                pkgs.append('salt-{1}'.format(pkg_format, salt_version))
 
-    if 'install' in text:
-        text = text + ' -y'
-    elif 'deb http' in text:
-        text = "echo \'" + text + "\' > /etc/apt/sources.list.d/salt_test.list"
-        {% if staging %}
-        text = text + '; sed -i \'s/com\/apt/com\/staging\/apt/\' /etc/apt/sources.list.d/salt*.list'
-        {% endif %}
+            pkgs.extend(_get_dependencies(url))
+            pkgs.extend(['salt-api{0}{1}'.format(pkg_format, salt_version),
+                         'salt-cloud{0}{1}'.format(pkg_format, salt_version),
+                         'salt-minion{0}{1}'.format(pkg_format, salt_version),
+                         'salt-master{0}{1}'.format(pkg_format, salt_version),
+                         'salt-ssh{0}{1}'.format(pkg_format, salt_version),
+                         'salt-syndic{0}{1}'.format(pkg_format, salt_version)])
 
-    if 'redhat' in os_v:
-        if 'yum install http' in text:
-            {% if staging %}
-            text = text + '; sed -i \'s/com\/yum/com\/staging\/yum/\' /etc/yum.repos.d/salt*.repo'
-            {% endif %}
-            pass
-        if 'saltstack-repo' in text:
-            text = "echo \'" + text + "\' > /etc/yum.repos.d/salt.repo"
-            {% if staging %}
-            text = text + '; sed -i \'s/com\/yum/com\/staging\/yum/\' /etc/yum.repos.d/salt*.repo'
-            {% endif %}
-
-    add_step = True
-    for rm in remove_steps:
-        if rm in text:
-            add_step = False
-    if add_step == True and text not in check_steps:
-        check_steps.append(text)
-
+            print('Querying url: {0}'.format(url))
+            contents = _get_url(url).text
+            for pkg in pkgs:
+                if isinstance(pkg, list):
+                    pkg = str(pkg[0])
+                print('Checking for pkg: {0}'.format(pkg))
+                if pkg not in contents.lower():
+                    raise Exception('The dependency {0} from the url {1} is not \
+                          available.'.format(pkg, url))
 
 def parse_html_method(tab_os, os_v, args):
     '''
     Parse the index.html for install commands
     '''
-    # Get and Parse url variables
-    if args.branch != LATEST:
-        url = 'https://repo.saltstack.com/staging/{0}.html'.format(args.branch)
+    urls = []
+    def _add_urls(cmd):
+        if 'http' in str(cmd):
+            link = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',
+                       str(cmd))[0]
+            if link not in urls:
+                if args.branch != LATEST and 'latest' in link:
+                    print('Not testing link: {0} because latest is not available on branch: {1}'.format(link, args.branch))
+                else:
+                    urls.append(link.split('<')[0])
+
+    # Get and Parse index page
+    if args.staging:
+        url = 'https://{0}:{1}@repo.saltstack.com/staging/{2}.html'.format(args.user, args.passwd,
+                                                                          'index' if args.branch == LATEST else args.branch)
     else:
-        url = 'https://repo.saltstack.com/staging/index.html'.format()
+        url = 'https://repo.saltstack.com/{0}.html'.format('index' if args.branch == LATEST else args.branch)
+
 
     get_url = requests.get(url)
+    if get_url.status_code != 200:
+        raise Exception('url {0} did not return 200'.format(get_url))
     html = get_url.content
     parse_html = bsoup(html)
 
-    os_instruction = []
-
+    # for loop over all tags and find http urls
     for tag in parse_html.findAll(attrs={'id' : tab_os}):
-        # grab all instructions for a specific os and release
-        # for example grab debian7 for latest release
         for tab_os_v in tag.findAll(attrs={'class': re.compile(os_v + ".*")}):
             for cmd in tab_os_v.findAll(attrs={'class': 'language-bash'}):
-                if cmd not in os_instruction:
-                    os_instruction.append(cmd)
+                _add_urls(cmd)
             for cmd_2 in tab_os_v.findAll(attrs={'class': 'language-ini'}):
-                if cmd_2 not in os_instruction:
-                    os_instruction.append(cmd_2)
+                _add_urls(cmd_2)
         # get all instructions that run on both veresion of each os_family
         for cmd_all in tag.findAll('code', attrs={'class': None}):
-            if cmd_all not in os_instruction:
-                os_instruction.append(cmd_all)
-    return os_instruction
+            _add_urls(cmd_all)
 
-
-def write_to_file(current_os, steps, release, os_v, salt_branch):
-    '''
-    Write installation instructions to Dockerfile
-    '''
-    distro=current_os.split('-')[1]
-    docker_dir=os.path.join(TMP_DOCKER_DIR, salt_branch, os_v, release)
-    docker_file=os.path.join(docker_dir, "install_salt.sh")
-
-    if not os.path.exists(docker_dir):
-        os.makedirs(docker_dir)
-
-    for step in steps:
-        sanitize_steps(step, os_v)
-    with open(docker_file, 'w') as outfile:
-        for step in check_steps:
-            outfile.write(step)
-            outfile.write('\n')
-
-    if 'redhat' in os_v:
-        ver = os_v[-1:]
-        cent_dockerdir=os.path.join(TMP_DOCKER_DIR, salt_branch, 'centos' + ver, release)
-        if not os.path.exists(cent_dockerdir):
-            os.makedirs(cent_dockerdir)
-        copyfile(docker_file, cent_dockerdir + "/install_salt.sh")
-    del check_steps[:]
+    return urls
 
 for current_os in os_tabs:
     parser = get_args()
     args = parser.parse_args()
     os_family = det_os_family(current_os)
-    os_versions = det_os_versions(os_family)
     release = determine_release(current_os)
+    os_versions = det_os_versions(os_family)
     for os_v in os_versions:
+        print('++++++++++++++++++++++++++++++++++')
+        print('Testing OS: {0} Release: {1}'.format(os_v, release))
+        print('++++++++++++++++++++++++++++++++++')
         os_instr = parse_html_method(current_os, os_v, args)
-        write_to_file(current_os, os_instr, release, os_v, args.branch)
+        download_check(os_instr, args.salt_version, os_v,
+                               branch=release if release == 'latest' else args.branch)
