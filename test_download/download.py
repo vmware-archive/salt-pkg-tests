@@ -13,9 +13,11 @@ TMP_DIR = tempfile.mkdtemp()
 LATEST = '2017.7'
 
 check_steps = []
-os_tabs = ['tab1-debian', 'tab2-debian', 'tab3-debian', 'tab1-redhat',
-           'tab2-redhat', 'tab3-redhat', 'tab1-ubuntu', 'tab2-ubuntu',
-           'tab3-ubuntu']
+os_tabs = ['tab1-raspbian', 'tab2-raspbian', 'tab3-raspbian',
+           'tab1-amzn', 'tab2-amzn', 'tab3-amzn',
+           'tab1-debian', 'tab2-debian', 'tab3-debian',
+           'tab1-redhat', 'tab2-redhat', 'tab3-redhat',
+           'tab1-ubuntu', 'tab2-ubuntu', 'tab3-ubuntu']
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -40,7 +42,13 @@ def get_args():
     return parser
 
 def det_os_family(os):
-    return {'tab1-debian': 'debian',
+    return {'tab1-raspbian': 'raspbian',
+            'tab2-raspbian': 'raspbian',
+            'tab3-raspbian': 'raspbian',
+            'tab1-amzn': 'amzn',
+            'tab2-amzn': 'amzn',
+            'tab3-amzn': 'amzn',
+            'tab1-debian': 'debian',
             'tab2-debian': 'debian',
             'tab3-debian': 'debian',
             'tab1-redhat': 'redhat',
@@ -52,7 +60,9 @@ def det_os_family(os):
            }[os]
 
 def det_os_versions(os_v):
-    return {'debian': ['debian8', 'debian9'],
+    return {'raspbian': ['raspbian'],
+            'amzn': ['amzn'],
+            'debian': ['debian8', 'debian9'],
             'redhat': ['redhat6', 'redhat7'],
             'ubuntu': ['ubuntu14', 'ubuntu16'],
            }[os_v]
@@ -85,6 +95,8 @@ def _get_dependencies(url):
     if 'redhat' in url:
         os = 'rhel'
     deps = [x.split('.')[1].split('-')[-1:][0] for x in re.findall('pkg.*.{0}{1}'.format(os, os_version), dep_sls)]
+    if 'amazon' in url:
+        deps = [x.split('.')[1].split('-')[-1:][0] for x in re.findall('pkg.*.amzn', dep_sls)]
 
     #remove comments
     comments = re.findall('\#\#    \- pkg.*.*.{0}{1}'.format(os, os_version), dep_sls)
@@ -93,6 +105,10 @@ def _get_dependencies(url):
             deps.remove(comment.split('.')[1].split('-')[-1:][0])
 
     remove_deps = ['importlib', 'pyzmq', 'ssl_match_hostname']
+    if 'armhf' in url:
+        remove_deps = ['libnacl', 'cherrypy', 'croniter', 'crypto', 'enum34',
+                       'jinja2', 'libnacl', 'msgpack', 'requests', 'urllib3',
+                       'yaml']
     for removal in remove_deps:
         # some of these deps are not in the repo, remove them from check
         if removal in str(deps):
@@ -111,13 +127,15 @@ def download_check(urls, salt_version, os, branch=None):
             if 'apt' in url:
                 pkg_format = '_'
                 pkgs.append('salt-common{0}{1}'.format(pkg_format, salt_version))
-            if 'redhat' in url:
+            if any(x in url for x in ['redhat', 'amazon']):
                 if 'rpm' in url:
                     _get_url(url)
-                if '$releasever' in url:
+                if any(x in url for x in ['$releasever', '$basearch']):
                     url = url.replace('$releasever', os_v[-1:]).replace('$basearch', 'x86_64') + salt_version
-                if 'archive' not in url:
+                if 'archive' not in url and 'redhat' in url:
                     url = '/'.join(url.split('/')[:-1]) + '/' + os_v[-1:] + '/x86_64/' + branch
+                elif 'archive' not in url and 'amazon' in url:
+                    url = '/'.join(url.split('/')[:-1]) + '/latest/x86_64/' + branch
                 pkg_format = '-'
                 pkgs.append('salt-{1}'.format(pkg_format, salt_version))
 
