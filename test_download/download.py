@@ -1,8 +1,8 @@
 #!/usr/bin/python
-from BeautifulSoup import BeautifulSoup as bsoup
-import BeautifulSoup
+from bs4 import BeautifulSoup as bsoup
 from shutil import copyfile
 import argparse
+import hashlib
 import requests
 import re
 import os
@@ -13,7 +13,7 @@ TMP_DIR = tempfile.mkdtemp()
 LATEST = '2017.7'
 
 check_steps = []
-os_tabs = ['tab1-raspbian', 'tab2-raspbian', 'tab3-raspbian',
+os_tabs = ['tab1-mac', 'tab1-windows', 'tab1-raspbian', 'tab2-raspbian', 'tab3-raspbian',
            'tab1-amzn', 'tab2-amzn', 'tab3-amzn',
            'tab1-debian', 'tab2-debian', 'tab3-debian',
            'tab1-redhat', 'tab2-redhat', 'tab3-redhat',
@@ -42,7 +42,9 @@ def get_args():
     return parser
 
 def det_os_family(os):
-    return {'tab1-raspbian': 'raspbian',
+    return {'tab1-mac': 'mac',
+            'tab1-windows': 'windows',
+            'tab1-raspbian': 'raspbian',
             'tab2-raspbian': 'raspbian',
             'tab3-raspbian': 'raspbian',
             'tab1-amzn': 'amzn',
@@ -60,7 +62,9 @@ def det_os_family(os):
            }[os]
 
 def det_os_versions(os_v):
-    return {'raspbian': ['raspbian'],
+    return {'mac': ['mac'],
+            'windows': ['windows'],
+            'raspbian': ['raspbian'],
             'amzn': ['amzn'],
             'debian': ['debian8', 'debian9'],
             'redhat': ['redhat6', 'redhat7'],
@@ -79,12 +83,40 @@ def determine_release(current_os):
         release='minor'
     return release
 
-def _get_url(url):
-    print('Querying url: {0}'.format(url))
-    get_url = requests.get(url)
-    if get_url.status_code != 200:
-        raise Exception('url {0} did not return 200'.format(url))
-    return get_url
+def _get_url(url, md5=False):
+    if md5:
+        def _download_url(url, path):
+            print('Downloading url {0} to path: {1}'.format(url, path))
+            get_url = requests.get(url, stream=True)
+            with open(path, 'wb') as f:
+                for chunk in get_url.iter_content(chunk_size=1024):
+                    if chunk:
+                        f.write(chunk)
+
+        # download urls
+        pkg = os.path.join(tempfile.gettempdir(), url.split('/')[-1:][0])
+        md5 = pkg + '.md5'
+        _download_url(url, path=pkg)
+        _download_url(url + '.md5', path=md5)
+
+        # check hashes
+        pkg_hash = hashlib.md5(open(pkg,'rb').read()).hexdigest()
+        with open(md5, 'rt', encoding='utf_16') as f:
+            md5_hash = f.read().split()[0].lower()
+        try:
+            assert md5_hash == pkg_hash
+        except AssertionError as e:
+            print('the pkg hash: {0} does not match the md5 file: {1}'.format(pkg_hash, md5_hash))
+            [os.remove(x) for x in [pkg, md5]]
+            raise
+        [os.remove(x) for x in [pkg, md5]]
+
+    else:
+        print('Querying url: {0}'.format(url))
+        get_url = requests.get(url)
+        if get_url.status_code != 200:
+            raise Exception('url {0} did not return 200'.format(url))
+        return get_url
 
 def _get_dependencies(url):
     version = args.salt_version.replace('.', '_')
@@ -122,7 +154,7 @@ def download_check(urls, salt_version, os, branch=None):
     for url in urls:
         if 'KEY' in url:
             _get_url(url)
-        else:
+        elif not any(x in url for x in ['windows', 'osx']):
             pkgs = []
             if 'apt' in url:
                 pkg_format = '_'
@@ -156,6 +188,8 @@ def download_check(urls, salt_version, os, branch=None):
                 if pkg not in contents.lower():
                     raise Exception('The dependency {0} from the url {1} is not \
                           available.'.format(pkg, url))
+        else:
+            pkg = _get_url(url, md5=True if 'md5' not in url else False)
 
 def parse_html_method(tab_os, os_v, args):
     '''
@@ -184,7 +218,7 @@ def parse_html_method(tab_os, os_v, args):
     if get_url.status_code != 200:
         raise Exception('url {0} did not return 200'.format(get_url))
     html = get_url.content
-    parse_html = bsoup(html)
+    parse_html = bsoup(html, "html5lib")
 
     # for loop over all tags and find http urls
     for tag in parse_html.findAll(attrs={'id' : tab_os}):
@@ -193,6 +227,8 @@ def parse_html_method(tab_os, os_v, args):
                 _add_urls(cmd)
             for cmd_2 in tab_os_v.findAll(attrs={'class': 'language-ini'}):
                 _add_urls(cmd_2)
+            for cmd_3 in tab_os_v.findAll('a', href=True):
+                _add_urls(cmd_3)
         # get all instructions that run on both veresion of each os_family
         for cmd_all in tag.findAll('code', attrs={'class': None}):
             _add_urls(cmd_all)
