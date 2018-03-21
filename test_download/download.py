@@ -6,6 +6,7 @@ import hashlib
 import requests
 import re
 import os
+import subprocess
 import tempfile
 
 # Miscellaneous variables
@@ -83,16 +84,42 @@ def determine_release(current_os):
         release='minor'
     return release
 
+def _cmd_run(cmd_args):
+    '''
+    Runs the given command in a subprocess and returns a dictionary containing
+    the subprocess pid, retcode, stdout, and stderr.
+    cmd_args
+        The list of program arguments constructing the command to run.
+    '''
+    ret = {}
+    try:
+        proc = subprocess.Popen(
+            cmd_args,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT
+        )
+    except (OSError, ValueError) as exc:
+        ret['stdout'] = str(exc)
+        ret['stderr'] = ''
+        ret['retcode'] = 1
+        ret['pid'] = None
+        return ret
+
+    ret['stdout'], ret['stderr'] = proc.communicate()
+    ret['pid'] = proc.pid
+    ret['retcode'] = proc.returncode
+    return ret
+
+def _download_url(url, path):
+    print('Downloading url {0} to path: {1}'.format(url, path))
+    get_url = requests.get(url, stream=True)
+    with open(path, 'wb') as f:
+        for chunk in get_url.iter_content(chunk_size=1024):
+            if chunk:
+                f.write(chunk)
+
 def _get_url(url, md5=False):
     if md5:
-        def _download_url(url, path):
-            print('Downloading url {0} to path: {1}'.format(url, path))
-            get_url = requests.get(url, stream=True)
-            with open(path, 'wb') as f:
-                for chunk in get_url.iter_content(chunk_size=1024):
-                    if chunk:
-                        f.write(chunk)
-
         # download urls
         pkg = os.path.join(tempfile.gettempdir(), url.split('/')[-1:][0])
         md5 = pkg + '.md5'
@@ -101,6 +128,7 @@ def _get_url(url, md5=False):
 
         # check hashes
         pkg_hash = hashlib.md5(open(pkg,'rb').read()).hexdigest()
+        print('comparing hashes for {0} and {1}'.format(pkg, md5))
         with open(md5, 'rt', encoding='utf_16') as f:
             md5_hash = f.read().split()[0].lower()
         try:
@@ -147,7 +175,40 @@ def _get_dependencies(url):
             deps.remove(removal)
     return deps
 
-def download_check(urls, salt_version, os, branch=None):
+def _verify_rpm(url, branch):
+    rpm = os.path.join(tempfile.gettempdir(),
+                       url.split('/')[-1:][0])
+    _download_url(url, rpm)
+    print('Installing rpm: {0}'.format(url))
+    ret = _cmd_run(['yum', 'install', rpm, '-y'])
+
+    # verify repo file
+    with open('/etc/yum.repos.d/salt-{0}.repo'.format(branch), 'rt') as f:
+        repo_file = f.read()
+    repo_ret = ("[salt-{0}]\n"
+            "name=SaltStack {1} Release Channel for RHEL/Centos $releasever\n"
+            "baseurl=https://repo.saltstack.com/yum/redhat/{2}/$basearch/{0}\n"
+            "failovermethod=priority\n"
+            "enabled=1\n"
+            "gpgcheck=1\n"
+            "gpgkey=file:///etc/pki/rpm-gpg/saltstack-signing-key\n").format(branch, 'Latest' if branch == 'latest' else branch, list(os_v)[-1:][0])
+    if not repo_file == repo_ret:
+        raise Exception('{0} and {1} are not matching'.format(repo_file, repo_ret))
+
+    # verify gpg key
+    installed_key = '/etc/pki/rpm-gpg/saltstack-signing-key'
+    with open(installed_key, 'rt') as f:
+        gpg_file = f.read()
+    _cmd_run(['rpm', '--import', installed_key])
+    gpg_ret = _cmd_run(['rpm', '-qa', 'gpg-pubkey*'])['stdout'].decode()
+    if 'gpg-pubkey-de57bfbe-53a9be98' not in gpg_ret:
+        raise Exception('saltstacks key: gpg-pubkey-de57bfbe-53a9be98 not found in installed keys')
+
+    # remove rpm
+    _cmd_run(['yum', 'remove', '.'.join(rpm.split('/')[-1:][0].split('.')[:-1]), '-y'])
+
+
+def download_check(urls, salt_version, os_test, branch=None):
     '''
     helper method that will clean up the steps for automation
     '''
@@ -161,6 +222,7 @@ def download_check(urls, salt_version, os, branch=None):
                 pkgs.append('salt-common{0}{1}'.format(pkg_format, salt_version))
             if any(x in url for x in ['redhat', 'amazon']):
                 if 'rpm' in url:
+                    _verify_rpm(url, branch)
                     _get_url(url)
                 if any(x in url for x in ['$releasever', '$basearch']):
                     url = url.replace('$releasever', os_v[-1:]).replace('$basearch', 'x86_64') + salt_version
@@ -218,7 +280,7 @@ def parse_html_method(tab_os, os_v, args):
     if get_url.status_code != 200:
         raise Exception('url {0} did not return 200'.format(get_url))
     html = get_url.content
-    parse_html = bsoup(html, "html5lib")
+    parse_html = bsoup(html, "html.parser")
 
     # for loop over all tags and find http urls
     for tag in parse_html.findAll(attrs={'id' : tab_os}):
