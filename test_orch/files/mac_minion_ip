@@ -1,0 +1,9 @@
+{%- set host = salt['pillar.get']('host') -%}
+{%- set mac_min_user = salt['pillar.get']('mac_min_user') -%}
+{%- set mac_min_passwd = salt['pillar.get']('mac_min_passwd') -%}
+{{ host }}:
+  host: {{ mac_ip }}
+  user: {{ mac_min_user }}
+  passwd: {{ mac_min_passwd }}
+  sudo: True
+  tty: True

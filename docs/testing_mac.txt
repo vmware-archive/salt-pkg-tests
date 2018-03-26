@@ -30,3 +30,35 @@ C1. salt-ssh 'linux-master' state.sls test_run pillar={'salt_version': '2017.7.3
 If you want to test an upgrade run steps A1-C1 and then again but only run A1 then C1 the next time to test the upgrade.
 
 NOTE: If you want to test python3 just add `python3': True to the pillar data
+
+
+##### New MacOSX package tests ######
+
+You can now test the mac pkgs with an orchestration state
+
+There are currently still a couple of things you need to make sure are set on your VM:
+
+1. add the host that controls the parallels VM to your /etc/salt/roster file with name `mac-*`. This will need to be improved so a user can name this what they want using a pillar value
+2. create a linux master host and add to roster file as well. Make sure its dns or ip address are the id of the roster. For example:
+
+10.7.0.2:
+  host: 10.7.0.2
+  user: <username>
+  passwd: <passwd>
+  sudo: True
+  tty: True
+
+Then you can run the orchestration file
+
+salt-run state.orchestrate test_orch.pkg-test-mac pillar="{'cloud_profile': ['jk-sierra'], 'salt_version': '2017.7.5', 'dev': 'staging', 'orch_master': '<minion on host controlling orch state>', 'username': '<username>', 'upgrade': False, 'clean': True, 'latest': False, 'repo': 'saltstack', 'test_rc_pkgs': False, 'wait_for_dns': True, 'repo_user': '<repo-user>', 'repo_passwd': '<repo-passwd>', 'python3': True, 'mac-parallels-vm-user': '<mac-parallels-vm-user>', 'mac_min_passwd': '<mac-parallels-vm-passwd>', 'master_host': '10.7.0.2'}" -ldebug
+
+cloud_profile examples: jk-capitan, jk-sierra, jk-highsierra
+
+if you pass 'python3': True it will test python3 packages, if false python2 packages
+
+if you want to test an upgrade just pass clean: False and upgrade True and upgrade_salt_version: 2017.7.4 to the state.orchestrate run
+
+TODO:
+ - automate steps 1 and 2
+ - delete linux master host
+ - delete parallels mac minion
