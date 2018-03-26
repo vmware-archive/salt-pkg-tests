@@ -1,0 +1,209 @@
+#!mako|jinja|yaml
+{# Import global parameters that source from grains and pillars #}
+{% import 'params.jinja' as params %}
+
+{% set key_timeout = pillar.get('key_timeout', '30') %}
+{% set salt_version = salt['pillar.get']('salt_version', '') %}
+{% set upgrade_salt_version = salt['pillar.get']('upgrade_salt_version', '') %}
+{% set repo_pkg = salt['pillar.get']('repo_pkg', '') %}
+{% set latest = salt['pillar.get']('latest', '') %}
+{% set dev = salt['pillar.get']('dev', '') %}
+{% set cloud_profile = salt['pillar.get']('cloud_profile', '') %}
+{% set orch_master = salt['pillar.get']('orch_master', '') %}
+{% set username = salt['pillar.get']('username', '') %}
+{% set upgrade = salt['pillar.get']('upgrade', '') %}
+{% set clean = salt['pillar.get']('clean', '') %}
+{% set repo = salt['pillar.get']('repo', '') %}
+{% set repo_user = salt['pillar.get']('repo_user', '') %}
+{% set repo_passwd = salt['pillar.get']('repo_passwd', '') %}
+{% set wait_for_dns = salt['pillar.get']('wait_for_dns', 'False') %}
+{% set mac_min_user = salt['pillar.get']('mac_min_user', '') %}
+{% set mac_min_passwd = salt['pillar.get']('mac_min_passwd', '') %}
+{% set master_host = salt['pillar.get']('master_host', '') %}
+
+<%!
+import string
+import random
+%>
+<% random_num = ''.join(random.choice(string.ascii_uppercase) for _ in range(4))
+%>
+
+{% set rand_name = <%text>'</%text>${random_num}<%text>'</%text> %}
+
+{% set hosts = [] %}
+
+{% macro destroy_vm(action='None') -%}
+{% for profile in cloud_profile %}
+{% set host = username + profile + rand_name %}
+{% do hosts.append(host) %}
+
+destroy_{{ host }}:
+  salt.function:
+    - name: salt_cluster.destroy_node
+    - tgt: {{ orch_master }}
+    - arg:
+      - {{ host }}
+
+{% endfor %}
+{% endmacro %}
+
+{% macro create_vm(action='None') -%}
+{% for profile in cloud_profile %}
+{% set host = username + profile + rand_name %}
+{% do hosts.append(host) %}
+{% set py = '-py2' if not params.python3 else '-py3' %}
+{% set profile = profile + py %}
+clone_{{ action }}_{{ host }}:
+  salt.function:
+    - name: cmd.run
+    - tgt: 'mac-*'
+    - ssh: 'true'
+    - arg:
+      - /opt/salt/bin/salt-call --local parallels.clone {{ profile }} {{ host }} linked=True runas=parallels -ldebug
+
+start_{{ action }}_{{ host }}:
+  salt.function:
+    - name: cmd.run
+    - tgt: 'mac-*'
+    - ssh: 'true'
+    - arg:
+      - /opt/salt/bin/salt-call --local parallels.start {{ host }} runas=parallels
+
+sleep_{{ action }}_{{ host }}:
+  salt.function:
+    - name: test.sleep
+    - tgt: {{ orch_master }}
+    - arg:
+      - 120
+
+add_ip_{{ host }}_roster:
+  salt.state:
+    - tgt: {{ orch_master }}
+    - tgt_type: list
+    - concurrent: True
+    - sls:
+      - test_orch.states.mac_ip
+    - timeout: 200
+    - pillar:
+        host: {{ host }}
+        mac_min_user: {{ mac_min_user }}
+        mac_min_passwd: {{ mac_min_passwd }}
+
+verify_host_{{ action }}_{{ host }}:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ orch_master }}
+    - arg:
+      - salt-ssh {{ host }} -i test.ping
+
+{% endfor %}
+{%- endmacro %}
+
+{% macro setup_salt(salt_version, action='None', upgrade_val='False') -%}
+test_install_{{ action }}:
+  salt.state:
+    - tgt: {{ hosts }}
+    - tgt_type: list
+    - ssh: 'true'
+    - sls:
+      - test_install.saltstack
+    - pillar:
+        minion_only: True
+        salt_version: {{ salt_version }}
+        dev: {{ dev }}
+        latest: {{ latest }}
+        upgrade: {{ upgrade_val }}
+        minion_id: {{ hosts[0] }}
+        test_os: 'MacOS'
+        repo_user: {{ repo_user }}
+        repo_passwd: {{ repo_passwd }}
+        master_host: {{ master_host }}
+        python3: {{ params.python3 }}
+
+{% if upgrade_val == 'False' %}
+test_setup_{{ action }}:
+  salt.state:
+    - tgt: {{ hosts }}
+    - tgt_type: list
+    - ssh: 'true'
+    - sls:
+      - test_setup
+    - pillar:
+        salt_version: {{ salt_version }}
+        minion_only: True
+        test_os: 'MacOS'
+        minion_id: {{ hosts[0] }}
+        dev: {{ dev }}
+        key_timeout: {{ key_timeout }}
+        master_host: {{ master_host }}
+        python3: {{ params.python3 }}
+    - require:
+      - salt: test_install_{{ action }}
+    - require_in:
+      - salt: test_run_{{ action }}
+
+sleep_{{ hosts }}:
+  salt.function:
+    - name: test.sleep
+    - tgt: {{ orch_master }}
+    - arg:
+      - 45
+
+{% endif %}
+
+accept_{{ hosts[0] }}_{{ action }}:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ master_host }}
+    - ssh: 'true'
+    - arg:
+      - salt-key -a {{ hosts[0] }} -y
+
+test_run_{{ action }}:
+  salt.state:
+    - tgt: {{ master_host }}
+    - tgt_type: list
+    - ssh: 'true'
+    - sls:
+      - test_run
+    - pillar:
+        salt_version: {{ salt_version }}
+        dev: {{ dev }}
+        repo_user: {{ repo_user }}
+        repo_passwd: {{ repo_passwd }}
+        upgrade: {{ upgrade_val }}
+        minion_only: True
+        test_os: 'MacOS'
+        minion_id: {{ hosts[0] }}
+        python3: {{ params.python3 }}
+{%- endmacro %}
+
+{% macro clean_up(action='None') -%}
+{% for profile in cloud_profile %}
+{% set host = username + profile + rand_name %}
+
+clean_up_known_hosts_{{ action }}:
+  salt.function:
+    - tgt: {{ orch_master }}
+    - name: ssh.rm_known_host
+    - arg:
+      - root
+      - {{ host.lower() }}
+
+{% endfor %}
+{%- endmacro %}
+
+{% if clean %}
+{{ create_vm(action='clean') }}
+{{ setup_salt(salt_version, action='clean') }}
+{#{{ clean_up(action='clean') }}#}
+{#{{ destroy_vm(action='clean') }}#}
+{% endif %}
+
+{% if upgrade %}
+{{ create_vm(action='upgrade') }}
+{{ setup_salt(upgrade_salt_version, action='preupgrade') }}
+{{ setup_salt(salt_version, action='upgrade', upgrade_val='True') }}
+{#{{ clean_up(action='upgrade') }}#}
+{#{{ destroy_vm(action='upgrade') }}#}
+{% endif %}
