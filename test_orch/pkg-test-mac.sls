@@ -19,7 +19,11 @@
 {% set wait_for_dns = salt['pillar.get']('wait_for_dns', 'False') %}
 {% set mac_min_user = salt['pillar.get']('mac_min_user', '') %}
 {% set mac_min_passwd = salt['pillar.get']('mac_min_passwd', '') %}
-{% set master_host = salt['pillar.get']('master_host', '') %}
+{% set master_host = 'qapkg-linux-master-' %}
+{% set master_profile = salt['pillar.get']('master_profile', '') %}
+{% set bootstrap_repo = salt['pillar.get']('bootstrap_repo', '') %}
+{% set parallels_master = salt['pillar.get']('parallels_master') %}
+
 
 <%!
 import string
@@ -31,18 +35,35 @@ import random
 {% set rand_name = <%text>'</%text>${random_num}<%text>'</%text> %}
 
 {% set hosts = [] %}
+{% set master_host = master_host + rand_name %}
 
 {% macro destroy_vm(action='None') -%}
 {% for profile in cloud_profile %}
 {% set host = username + profile + rand_name %}
 {% do hosts.append(host) %}
 
-destroy_{{ host }}:
+stop_{{ host }}:
+  salt.function:
+    - name: cmd.run
+    - tgt: 'mac-*'
+    - ssh: 'true'
+    - arg:
+      - /opt/salt/bin/salt-call --local parallels.stop {{ host }} runas=parallels
+
+delete_{{ host }}:
+  salt.function:
+    - name: cmd.run
+    - tgt: 'mac-*'
+    - ssh: 'true'
+    - arg:
+      - /opt/salt/bin/salt-call --local parallels.delete {{ host }} runas=parallels
+
+destroy_master_{{ host }}:
   salt.function:
     - name: salt_cluster.destroy_node
     - tgt: {{ orch_master }}
     - arg:
-      - {{ host }}
+      - {{ master_host }}
 
 {% endfor %}
 {% endmacro %}
@@ -53,6 +74,20 @@ destroy_{{ host }}:
 {% do hosts.append(host) %}
 {% set py = '-py2' if not params.python3 else '-py3' %}
 {% set profile = profile + py %}
+create_{{ action }}_linux_master:
+  salt.function:
+    - name: salt_cluster.create_node
+    - tgt: {{ orch_master }}
+    - arg:
+      - {{ master_host }}
+      - {{ master_profile }}
+    - require_in:
+      - salt: clone_{{ action }}_{{ host }}
+      - salt: start_{{ action }}_{{ host }}
+      - salt: sleep_{{ action }}_{{ host }}
+      - salt: add_ip_{{ host }}_roster
+      - salt: verify_host_{{ action }}_{{ host }}
+
 clone_{{ action }}_{{ host }}:
   salt.function:
     - name: cmd.run
@@ -88,18 +123,31 @@ add_ip_{{ host }}_roster:
         host: {{ host }}
         mac_min_user: {{ mac_min_user }}
         mac_min_passwd: {{ mac_min_passwd }}
+        parrallels_master: {{ parallels_master }}
 
 verify_host_{{ action }}_{{ host }}:
   salt.function:
     - name: cmd.run
     - tgt: {{ orch_master }}
     - arg:
-      - salt-ssh {{ host }} -i test.ping
+      - salt-ssh -L "{{ master_host }},{{ host }}" -i test.ping
 
 {% endfor %}
 {%- endmacro %}
 
 {% macro setup_salt(salt_version, action='None', upgrade_val='False') -%}
+bootstrap_master_{{ action }}:
+  salt.state:
+    - tgt: {{ master_host }}
+    - tgt_type: list
+    - ssh: 'true'
+    - sls:
+      - test_install.bootstrap
+    - pillar:
+        salt_version: {{ salt_version }}
+        bootstrap_repo: {{ bootstrap_repo }}
+
+
 test_install_{{ action }}:
   salt.state:
     - tgt: {{ hosts }}
@@ -123,15 +171,14 @@ test_install_{{ action }}:
 {% if upgrade_val == 'False' %}
 test_setup_{{ action }}:
   salt.state:
-    - tgt: {{ hosts }}
-    - tgt_type: list
-    - ssh: 'true'
+    - tgt: {{ orch_master }}
     - sls:
-      - test_setup
+      - test_setup.minion_only.macosx
     - pillar:
         salt_version: {{ salt_version }}
         minion_only: True
         test_os: 'MacOS'
+        host: {{ hosts[0] }}
         minion_id: {{ hosts[0] }}
         dev: {{ dev }}
         key_timeout: {{ key_timeout }}
@@ -196,14 +243,14 @@ clean_up_known_hosts_{{ action }}:
 {% if clean %}
 {{ create_vm(action='clean') }}
 {{ setup_salt(salt_version, action='clean') }}
-{#{{ clean_up(action='clean') }}#}
-{#{{ destroy_vm(action='clean') }}#}
+{{ clean_up(action='clean') }}
+{{ destroy_vm(action='clean') }}
 {% endif %}
 
 {% if upgrade %}
 {{ create_vm(action='upgrade') }}
 {{ setup_salt(upgrade_salt_version, action='preupgrade') }}
 {{ setup_salt(salt_version, action='upgrade', upgrade_val='True') }}
-{#{{ clean_up(action='upgrade') }}#}
-{#{{ destroy_vm(action='upgrade') }}#}
+{{ clean_up(action='upgrade') }}
+{{ destroy_vm(action='upgrade') }}
 {% endif %}
