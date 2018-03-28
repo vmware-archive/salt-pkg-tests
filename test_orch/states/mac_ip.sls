@@ -5,7 +5,7 @@ import time
 def run():
     config = {}
     mac_min = __pillar__['host']
-    query_ip  = __salt__['cmd.run']('salt-ssh "mac*" cmd.run "/opt/salt/bin/salt-call --local parallels.exec {0} ifconfig runas=parallels"'.format(mac_min))
+    query_ip  = __salt__['cmd.run']('salt-ssh {0} cmd.run "/opt/salt/bin/salt-call --local parallels.exec {1} ifconfig runas=parallels"'.format(__pillar__['parallels_master'], mac_min))
     for value in query_ip.split():
       ip_p = re.compile('^10.[0-9]')
       if ip_p.match(value) and '255' not in value:
