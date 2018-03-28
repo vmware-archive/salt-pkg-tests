@@ -45,7 +45,7 @@ import random
 stop_{{ host }}:
   salt.function:
     - name: cmd.run
-    - tgt: 'mac-*'
+    - tgt: {{ parallels_master }}
     - ssh: 'true'
     - arg:
       - /opt/salt/bin/salt-call --local parallels.stop {{ host }} runas=parallels
@@ -53,7 +53,7 @@ stop_{{ host }}:
 delete_{{ host }}:
   salt.function:
     - name: cmd.run
-    - tgt: 'mac-*'
+    - tgt: {{ parallels_master }}
     - ssh: 'true'
     - arg:
       - /opt/salt/bin/salt-call --local parallels.delete {{ host }} runas=parallels
@@ -91,7 +91,7 @@ create_{{ action }}_linux_master:
 clone_{{ action }}_{{ host }}:
   salt.function:
     - name: cmd.run
-    - tgt: 'mac-*'
+    - tgt: {{ parallels_master }}
     - ssh: 'true'
     - arg:
       - /opt/salt/bin/salt-call --local parallels.clone {{ profile }} {{ host }} linked=True runas=parallels -ldebug
@@ -99,7 +99,7 @@ clone_{{ action }}_{{ host }}:
 start_{{ action }}_{{ host }}:
   salt.function:
     - name: cmd.run
-    - tgt: 'mac-*'
+    - tgt: {{ parallels_master }}
     - ssh: 'true'
     - arg:
       - /opt/salt/bin/salt-call --local parallels.start {{ host }} runas=parallels
@@ -123,7 +123,7 @@ add_ip_{{ host }}_roster:
         host: {{ host }}
         mac_min_user: {{ mac_min_user }}
         mac_min_passwd: {{ mac_min_passwd }}
-        parrallels_master: {{ parallels_master }}
+        parallels_master: {{ parallels_master }}
 
 verify_host_{{ action }}_{{ host }}:
   salt.function:
@@ -212,7 +212,7 @@ test_run_{{ action }}:
     - tgt_type: list
     - ssh: 'true'
     - sls:
-      - test_run
+      - test_run.minion_only.macosx
     - pillar:
         salt_version: {{ salt_version }}
         dev: {{ dev }}
