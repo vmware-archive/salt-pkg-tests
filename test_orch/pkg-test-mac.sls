@@ -141,6 +141,7 @@ bootstrap_master_{{ action }}:
     - tgt: {{ master_host }}
     - tgt_type: list
     - ssh: 'true'
+    - concurrent: True
     - sls:
       - test_install.bootstrap
     - pillar:
@@ -205,6 +206,13 @@ accept_{{ hosts[0] }}_{{ action }}:
     - ssh: 'true'
     - arg:
       - salt-key -a {{ hosts[0] }} -y
+
+sleep_after_accept_{{ hosts[0] }}_{{ action }}:
+  salt.function:
+    - name: test.sleep
+    - tgt: {{ orch_master }}
+    - arg:
+      - 15
 
 test_run_{{ action }}:
   salt.state:
