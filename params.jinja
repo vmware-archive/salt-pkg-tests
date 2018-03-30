@@ -2,7 +2,7 @@
 {% set os = grains.get('os', '') %}
 {% set os_family = grains.get('os_family', '')  %}
 {% set os_release = grains.get('osrelease', '') %}
-{% set os_major_release = grains.get('osmajorrelease', '') %}
+{% set os_major_release = grains.get('osmajorrelease', '')|int %}
 {% set os_code_name = grains.get('oscodename', '')  %}
 {% set os_arch = grains.get('osarch', '') %}
 

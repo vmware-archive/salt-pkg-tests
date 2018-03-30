@@ -54,15 +54,19 @@ minion_config:
         master: localhost
         id: {{ params.minion_id }}
 
-enable_services:
-# this doesn't seem to be working
-#  service.enabled:
-#    - names:
-#      - salt-master
-#      - salt-minion
+enable_master:
   cmd.run:
     - names:
       - {{ params.service_master }}
+      - sleep 15
+    - require:
+      - file: remove_pki
+      - file: clear_minion_id
+      - file: minion_config
+
+enable_minion:
+  cmd.run:
+    - names:
       - {{ params.service_minion }}
     - require:
       - file: remove_pki
@@ -73,7 +77,8 @@ wait_for_key:
   cmd.run:
     - name: sleep {{ params.key_timeout }}
     - require:
-      - cmd: enable_services
+      - cmd: enable_master
+      - cmd: enable_minion
 
 accept_key:
   cmd.run:

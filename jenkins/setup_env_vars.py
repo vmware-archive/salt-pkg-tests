@@ -86,7 +86,9 @@ def get_url(args):
             url = repo_url + amazon_url + 'latest' + redhat_arch + version
     return url
 
-def get_salt_version(url, args):
+def get_salt_version(url, args, prev_branch=False):
+    if 'osx' not in url and prev_branch:
+        url = url.replace(url.split('/')[-1], args)
     get_url = requests.get(url)
     ret_code = get_url.status_code
     if ret_code != 200:
@@ -115,7 +117,7 @@ def set_env_vars(**kwargs):
     release = ver_split[2]
     upgrade_from_version = year + '.' + month + '.' + str((int(release) -1))
     if kwargs['salt_version'].split('.')[-1:][0] == '0':
-        upgrade_from_version = get_salt_version(kwargs['url'], kwargs['prev_branch'])
+        upgrade_from_version = get_salt_version(kwargs['url'], kwargs['prev_branch'], prev_branch=True)
     branch = year + '.' + month
 
     output = []
