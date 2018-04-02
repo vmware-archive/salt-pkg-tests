@@ -11,7 +11,7 @@ import tempfile
 
 # Miscellaneous variables
 TMP_DIR = tempfile.mkdtemp()
-LATEST = '2017.7'
+LATEST = '2018.3'
 
 check_steps = []
 os_tabs = ['tab1-mac', 'tab1-windows', 'tab1-raspbian', 'tab2-raspbian', 'tab3-raspbian',
@@ -148,7 +148,7 @@ def _get_url(url, md5=False):
 
 def _get_dependencies(url):
     version = args.salt_version.replace('.', '_')
-    os = url.split('/')[4]
+    os = url.split('/')[5]
     os_version = url.split('/')[5].split('.')[0]
     print('Determining dependencies for {0}'.format(os))
     dep_sls = _get_url('https://raw.githubusercontent.com/saltstack/salt-pack/develop/file_roots/versions/{0}/{1}_pkg.sls'.format(version, os)).text
@@ -183,15 +183,39 @@ def _verify_rpm(url, branch):
     ret = _cmd_run(['yum', 'install', rpm, '-y'])
 
     # verify repo file
-    with open('/etc/yum.repos.d/salt-{0}.repo'.format(branch), 'rt') as f:
+    yum_file = '/etc/yum.repos.d/salt-{0}{1}{2}.repo'.format('py3-' if 'py3' in url else '', 'amzn-' if 'amzn' in url else '', branch)
+    with open(yum_file, 'rt') as f:
         repo_file = f.read()
+    py_msg = ''
+    py_pkg = ''
+    if args.branch in url and '2017' not in args.branch:
+        if 'py3' in url:
+            py_msg = 'Python 3 '
+            py_pkg = 'py3-'
+        else:
+            py_msg = 'Python 2 '
+
     repo_ret = ("[salt-{0}]\n"
-            "name=SaltStack {1} Release Channel for RHEL/Centos $releasever\n"
-            "baseurl=https://repo.saltstack.com/yum/redhat/{2}/$basearch/{0}\n"
+            "name=SaltStack {1} Release Channel for {3}RHEL/Centos $releasever\n"
+            "baseurl=https://repo.saltstack.com/{5}/redhat/{2}/$basearch/{4}\n"
             "failovermethod=priority\n"
             "enabled=1\n"
             "gpgcheck=1\n"
-            "gpgkey=file:///etc/pki/rpm-gpg/saltstack-signing-key\n").format(branch, 'Latest' if branch == 'latest' else branch, list(os_v)[-1:][0])
+            "gpgkey=file:///etc/pki/rpm-gpg/saltstack-signing-key\n").format(py_pkg + branch,
+                                                                             'Latest' if branch == 'latest' else branch,
+                                                                             list(os_v)[-1:][0],
+                                                                             py_msg,
+                                                                             branch,
+                                                                             'py3' if 'py3' in url and 'latest' not in url else 'yum')
+    if 'amzn' in url:
+        repo_ret = ("[salt-amzn-{0}]\n"
+                "name=SaltStack {1} Release Channel for native Amazon Linux\n"
+                "baseurl=https://repo.saltstack.com/yum/amazon/$releasever/$basearch/{0}\n"
+                "failovermethod=priority\n"
+                "priority=10\n"
+                "enabled=1\n"
+                "gpgcheck=1\n"
+                "gpgkey=file:///etc/pki/rpm-gpg/saltstack-signing-key\n").format(branch, 'Latest' if branch == 'latest' else branch, list(os_v)[-1:][0])
     if not repo_file == repo_ret:
         raise Exception('{0} and {1} are not matching'.format(repo_file, repo_ret))
 
@@ -213,6 +237,12 @@ def download_check(urls, salt_version, os_test, branch=None):
     helper method that will clean up the steps for automation
     '''
     for url in urls:
+        if args.staging:
+            a_num = 8 if 'https' in url else 7
+            auth = url[:a_num] + args.user + ':' + args.passwd + '@' + url[a_num:]
+            num = 29 if 'https' in url else 28
+            a_len = len(args.user) + len(args.passwd) + num
+            url = auth[:a_len] + 'staging/' + auth[a_len:]
         if 'KEY' in url:
             _get_url(url)
         elif not any(x in url for x in ['windows', 'osx']):
