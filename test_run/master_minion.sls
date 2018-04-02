@@ -25,6 +25,10 @@ key:
   cmd.run:
     - name: salt-key -L
 
+sleep:
+  cmd.run:
+    - name: sleep 24
+
 versions:
   cmd.run:
     - names:

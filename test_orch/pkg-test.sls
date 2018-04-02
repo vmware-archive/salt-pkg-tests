@@ -17,6 +17,7 @@
 {% set repo_user = salt['pillar.get']('repo_user', '') %}
 {% set repo_passwd = salt['pillar.get']('repo_passwd', '') %}
 {% set wait_for_dns = salt['pillar.get']('wait_for_dns', 'False') %}
+{% set python3 = salt['pillar.get']('python3', 'False') %}
 
 <%!
 import string
@@ -126,6 +127,7 @@ test_install_{{ action }}:
         upgrade: {{ upgrade_val }}
         repo_user: {{ repo_user }}
         repo_passwd: {{ repo_passwd }}
+        python3: {{ python3 }}
 
 {% if upgrade_val == 'False' %}
 test_setup_{{ action }}:
@@ -139,6 +141,7 @@ test_setup_{{ action }}:
         salt_version: {{ salt_version }}
         dev: {{ dev }}
         key_timeout: {{ key_timeout }}
+        python3: {{ python3 }}
     - require:
       - salt: test_install_{{ action }}
     - require_in:
@@ -158,6 +161,7 @@ test_run_{{ action }}:
         repo_user: {{ repo_user }}
         repo_passwd: {{ repo_passwd }}
         upgrade: {{ upgrade_val }}
+        python3: {{ python3 }}
 {%- endmacro %}
 
 {% macro clean_up(action='None') -%}
