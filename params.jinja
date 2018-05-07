@@ -62,9 +62,9 @@
 
 {# set python repo dir #}
 {% if on_rhel %}
-    {% set py_dir = 'py3' if params.python3 else 'yum' %}
+    {% set py_dir = 'py3' if python3 else 'yum' %}
 {% elif on_debian %}
-    {% set py_dir = 'py3' if params.python3 else 'apt' %}
+    {% set py_dir = 'py3' if python3 else 'apt' %}
 {% endif %}
 
 {# Create a versioned package set to work around pkg.installed bugs #}
@@ -166,3 +166,7 @@
 {% set minion_utils = ['salt-call', 'salt-cp', 'salt-minion', 'salt-ssh', 'spm'] %}
 {% set minion_only = salt['pillar.get']('minion_only', False) %}
 {% set test_os = salt['pillar.get']('test_os', None) %}
+
+{# windonws-only variables #}
+{% set linux_master_user = salt['pillar.get']('linux_master_user') %}
+{% set linux_master_passwd = salt['pillar.get']('linux_master_passwd') %}

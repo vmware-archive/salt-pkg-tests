@@ -1,3 +1,7 @@
+#!mako|jinja|yaml
+{# Import global parameters that source from grains and pillars #}
+{% import 'params.jinja' as params %}
+
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
 {% set upgrade_salt_version = salt['pillar.get']('upgrade_salt_version', '') %}
 {% set repo_pkg = salt['pillar.get']('repo_pkg', '') %}
@@ -9,19 +13,38 @@
 {% set username = salt['pillar.get']('username', '') %}
 {% set upgrade = salt['pillar.get']('upgrade', '') %}
 {% set clean = salt['pillar.get']('clean', '') %}
+{% set test_rc_pkgs = salt['pillar.get']('test_rc_pkgs', False) %}
 {% set hosts = [] %}
 
+<%!
+import string
+import random
+%>
+<% random_num = ''.join(random.choice(string.ascii_uppercase) for _ in range(4))
+%>
+
+{% set rand_name = <%text>'</%text>${random_num}<%text>'</%text> %}
+{% set linux_master = 'qapkgtest-linmaster-' + rand_name %}
+
 {% macro destroy_vm() -%}
+{% for profile in cloud_profile %}
+{% set host = username + profile + rand_name %}
+{% do hosts.append(host) %}
 destroy_linux_master_win_minion:
   salt.function:
     - name: cmd.run
     - tgt: {{ orch_master }}
     - arg:     
       - salt-cloud -m /etc/salt/cloud.maps.d/windows.map -d -y
+{% endfor %}
 {% endmacro %}
 
 
 {% macro create_vm(salt_version, action='None') -%}
+{% for profile in cloud_profile %}
+{% set host = username + profile + rand_name %}
+{% do hosts.append(host) %}
+
 setup_win_on_master:
   salt.state:
     - tgt: {{ orch_master }}
@@ -29,12 +52,13 @@ setup_win_on_master:
       - test_orch.states.setup_windows_on_master
     - pillar:
         salt_version: {{ salt_version }}
-        dev: {{ dev }}
+        staging: {{ dev }}
         orch_master: {{ orch_master }}
-    - require_in:
-      - salt: create_linux_master_win_minion
-      - salt: sleep_before_verify
-      - salt: verify_ssh_hosts
+        linux_master: {{ linux_master }}
+        test_rc_pkgs: {{ test_rc_pkgs }}
+        python3: {{ params.python3 }}
+        repo_auth: {{ params.repo_auth }}
+        host: {{ host }}
 
 create_linux_master_win_minion:
   salt.function:
@@ -42,6 +66,25 @@ create_linux_master_win_minion:
     - tgt: {{ orch_master }}
     - arg:     
       - salt-cloud -m /etc/salt/cloud.maps.d/windows.map -y
+    - require:
+      - salt: setup_win_on_master
+    - require_in:
+      - salt: add_linux_master_roster
+      - salt: sleep_before_verify
+      - salt: verify_ssh_hosts
+
+add_linux_master_roster:
+  salt.state:
+    - tgt: {{ orch_master }}
+    - sls:
+      - test_orch.states.add_ip_roster
+    - pillar:
+        salt_version: {{ salt_version }}
+        dev: {{ dev }}
+        host: {{ host }}
+        linux_master_user: {{ params.linux_master_user }}
+        linux_master_passwd: {{ params.linux_master_passwd }}
+        linux_master: {{ linux_master }}
 
 sleep_before_verify:
   salt.function:
@@ -55,13 +98,14 @@ verify_ssh_hosts:
     - name: cmd.run
     - tgt: {{ orch_master }}
     - arg:
-      - salt-ssh '*' -i test.ping
+      - salt-ssh {{ linux_master }} -i test.ping
+{% endfor %}
 {%- endmacro %} 
 
 {% macro test_run(salt_version, action='None', upgrade_val='False') -%}
 test_run_{{ action }}:
   salt.state:
-    - tgt: '*master*' 
+    - tgt: {{ linux_master }}
     - tgt_type: glob
     - ssh: 'true'
     - sls:
@@ -74,7 +118,7 @@ test_run_{{ action }}:
 {% macro upgrade_salt(salt_version, action='None', upgrade_val='False') -%}
 test_run_{{ action }}:
   salt.state:
-    - tgt: '*master*' 
+    - tgt: {{ linux_master }}
     - tgt_type: glob
     - ssh: 'true'
     - sls:

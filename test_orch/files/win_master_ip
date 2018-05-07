@@ -1,0 +1,6 @@
+{{ linux_master }}:
+  host: {{ host_ip }}
+  user: {{ linux_master_user }}
+  passwd: {{ linux_master_passwd }}
+  sudo: True
+  tty: True
