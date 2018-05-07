@@ -1,9 +1,12 @@
-ec2_centos_7:
-  - qapkgtest-master-linux:
+{% set host = salt['pillar.get']('host') %}
+{% set salt_version = salt['pillar.get']('salt_version', '') %}
+linode_cent7:
+  - {{ salt['pillar.get']('linux_master') }}:
       make_master: True
-      script_args: -M -P git v{{ salt['pillar.get']('salt_version', '') }}
+      script_args: -M -P git v{{ salt_version }}
       master:
         hash_type: sha256
-aws_win_2008:
-  - qapkgtest-win2008:
-      win_installer: /etc/salt/windows/Salt-Minion-{{ salt['pillar.get']('salt_version', '') }}-AMD64-Setup.exe
+{% set win_os = ['10', '2008', '2012', '2016'] %}
+one_windows_py2:
+  - {{ host }}:
+      win_installer: /etc/salt/windows/{{ pkg }}
