@@ -57,6 +57,7 @@ def get_url(args):
     redhat_url = 'yum/redhat/'
     debian_url = 'apt/debian/'
     ubuntu_url = 'apt/ubuntu/'
+    windows_url = 'windows/'
     redhat_arch = '/x86_64/'
     debian_arch = '/amd64/'
     pi_arch = '/armhf/'
@@ -84,6 +85,8 @@ def get_url(args):
             url = repo_url + redhat_url + '6' + redhat_arch + version
         else:
             url = repo_url + amazon_url + 'latest' + redhat_arch + version
+    elif 'windows' in args.os:
+        url = repo_url + windows_url
     return url
 
 def get_salt_version(url, args, prev_branch=False):
@@ -102,6 +105,8 @@ def get_salt_version(url, args, prev_branch=False):
             pkg_name = 'salt-{0}'.format(args.branch)
         except AttributeError:
             pkg_name = 'salt-{0}'.format(args)
+    if 'windows' in url:
+        pkg_name = 'Salt-Minion-{0}'.format(args.branch)
 
     for tag in parse_html.findAll(attrs={'href': re.compile(pkg_name +
                                                            ".*")}):
