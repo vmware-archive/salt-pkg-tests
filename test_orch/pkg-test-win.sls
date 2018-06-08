@@ -35,7 +35,7 @@ destroy_linux_master_win_minion:
     - name: cmd.run
     - tgt: {{ orch_master }}
     - arg:     
-      - salt-cloud -m /etc/salt/cloud.maps.d/windows.map -d -y
+      - salt-cloud -m /etc/salt/cloud.maps.d/windows-{{ host }}.map -d -y
 {% endfor %}
 {% endmacro %}
 
@@ -50,6 +50,7 @@ setup_win_on_master:
     - tgt: {{ orch_master }}
     - sls:
       - test_orch.states.setup_windows_on_master
+    - concurrent: True
     - pillar:
         salt_version: {{ salt_version }}
         staging: {{ dev }}
@@ -58,6 +59,9 @@ setup_win_on_master:
         test_rc_pkgs: {{ test_rc_pkgs }}
         python3: {{ params.python3 }}
         repo_auth: {{ params.repo_auth }}
+        win_arch: {{ params.win_arch }}
+        git_user: {{ params.git_user }}
+        profile: {{ profile }}
         host: {{ host }}
 
 create_linux_master_win_minion:
@@ -65,7 +69,7 @@ create_linux_master_win_minion:
     - name: cmd.run
     - tgt: {{ orch_master }}
     - arg:     
-      - salt-cloud -m /etc/salt/cloud.maps.d/windows.map -y
+      - salt-cloud -m /etc/salt/cloud.maps.d/windows-{{ host }}.map -y
     - require:
       - salt: setup_win_on_master
     - require_in:
@@ -78,6 +82,7 @@ add_linux_master_roster:
     - tgt: {{ orch_master }}
     - sls:
       - test_orch.states.add_ip_roster
+    - concurrent: True
     - pillar:
         salt_version: {{ salt_version }}
         dev: {{ dev }}
@@ -91,7 +96,7 @@ sleep_before_verify:
     - name: test.sleep
     - tgt: {{ orch_master }}
     - arg:
-      - 120
+      - 150
 
 verify_ssh_hosts:
   salt.function:
@@ -99,6 +104,14 @@ verify_ssh_hosts:
     - tgt: {{ orch_master }}
     - arg:
       - salt-ssh {{ linux_master }} -i test.ping
+
+disable_firewall:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ orch_master }}
+    - arg:
+      - salt-ssh {{ linux_master }} service.stop firewalld
+
 {% endfor %}
 {%- endmacro %} 
 
@@ -116,7 +129,7 @@ test_run_{{ action }}:
 {%- endmacro %}
 
 {% macro upgrade_salt(salt_version, action='None', upgrade_val='False') -%}
-test_run_{{ action }}:
+upgrade_salt_{{ action }}:
   salt.state:
     - tgt: {{ linux_master }}
     - tgt_type: glob
@@ -126,6 +139,9 @@ test_run_{{ action }}:
     - pillar:
         salt_version: {{ salt_version }}
         dev: {{ dev }}
+        win_arch: {{ params.win_arch }}
+        python3: {{ params.python3 }}
+        repo_auth: {{ params.repo_auth }}
 {%- endmacro %}
 
 

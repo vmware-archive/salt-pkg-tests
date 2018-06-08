@@ -109,7 +109,7 @@ sleep_{{ action }}_{{ host }}:
     - name: test.sleep
     - tgt: {{ orch_master }}
     - arg:
-      - 120
+      - 200
 
 add_ip_{{ host }}_roster:
   salt.state:
@@ -198,6 +198,21 @@ sleep_{{ hosts }}:
       - 45
 
 {% endif %}
+
+disable_firewalld_{{ hosts[0] }}_{{ action }}:
+  salt.function:
+    - name: service.stop
+    - tgt: {{ master_host }}
+    - ssh: 'true'
+    - arg:
+      - firewalld
+
+wait_for_firewall_{{ hosts }}_{{ action }}:
+  salt.function:
+    - name: test.sleep
+    - tgt: {{ orch_master }}
+    - arg:
+      - 45
 
 accept_{{ hosts[0] }}_{{ action }}:
   salt.function:
