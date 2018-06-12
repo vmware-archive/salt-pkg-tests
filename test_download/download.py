@@ -186,17 +186,21 @@ def _verify_rpm(url, branch):
     yum_file = '/etc/yum.repos.d/salt-{0}{1}{2}.repo'.format('py3-' if 'py3' in url else '', 'amzn-' if 'amzn' in url else '', branch)
     with open(yum_file, 'rt') as f:
         repo_file = f.read()
-    py_msg = ''
+    py_msg = 'for '
     py_pkg = ''
-    if args.branch in url and '2017' not in args.branch:
+
+    if 'repo-' in url and '2017' not in args.branch:
         if 'py3' in url:
-            py_msg = 'Python 3 '
+            if '2018.3' in url:
+                py_msg = 'for Python 3 '
+            else:
+                py_msg = 'Python 3 for '
             py_pkg = 'py3-'
-        else:
-            py_msg = 'Python 2 '
+        elif 'latest' not in url:
+            py_msg = 'for Python 2 '
 
     repo_ret = ("[salt-{0}]\n"
-            "name=SaltStack {1} Release Channel for {3}RHEL/Centos $releasever\n"
+            "name=SaltStack {1} Release Channel {3}RHEL/Centos $releasever\n"
             "baseurl=https://repo.saltstack.com/{5}/redhat/{2}/$basearch/{4}\n"
             "failovermethod=priority\n"
             "enabled=1\n"
@@ -206,7 +210,7 @@ def _verify_rpm(url, branch):
                                                                              list(os_v)[-1:][0],
                                                                              py_msg,
                                                                              branch,
-                                                                             'py3' if 'py3' in url and 'latest' not in url else 'yum')
+                                                                             'py3' if 'py3' in url else 'yum')
     if 'amzn' in url:
         repo_ret = ("[salt-amzn-{0}]\n"
                 "name=SaltStack {1} Release Channel for native Amazon Linux\n"
