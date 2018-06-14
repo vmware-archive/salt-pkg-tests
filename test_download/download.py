@@ -8,6 +8,7 @@ import re
 import os
 import subprocess
 import tempfile
+import tarfile
 
 # Miscellaneous variables
 TMP_DIR = tempfile.mkdtemp()
@@ -148,8 +149,13 @@ def _get_url(url, md5=False):
 
 def _get_dependencies(url):
     version = args.salt_version.replace('.', '_')
-    os = url.split('/')[5]
-    os_version = url.split('/')[5].split('.')[0]
+    if 'staging' in url:
+        os = url.split('/')[5]
+        os_version = url.split('/')[6].split('.')[0]
+    else:
+        os = url.split('/')[4]
+        os_version = url.split('/')[5].split('.')[0]
+    print(f'=====> the OS is {os}, the version is {os_version}')
     print('Determining dependencies for {0}'.format(os))
     dep_sls = _get_url('https://raw.githubusercontent.com/saltstack/salt-pack/develop/file_roots/versions/{0}/{1}_pkg.sls'.format(version, os)).text
     if 'redhat' in url:
@@ -176,16 +182,26 @@ def _get_dependencies(url):
     return deps
 
 def _verify_rpm(url, branch):
-    rpm = os.path.join(tempfile.gettempdir(),
+    # Still requires RPM, but uses rpm2archive to allow us to analyze it without installing. Does still extract the key, though.
+    tmpdir = tempfile.gettempdir()
+    rpm = os.path.join(tmpdir,
                        url.split('/')[-1:][0])
     _download_url(url, rpm)
-    print('Installing rpm: {0}'.format(url))
-    ret = _cmd_run(['yum', 'install', rpm, '-y'])
+    print('Checking rpm validity: {0}'.format(url))
+    ret = _cmd_run(['rpm2archive', rpm])
+
+    # Set the correct yum file location in the archive
+    yum_file = '/etc/yum.repos.d/salt-{0}{1}{2}.repo'.format('py3-' if 'py3' in url else '', 'amzn-' if 'amzn' in url else '', branch)
+    # The signing key location in the yum archive
+    yum_key = '/etc/pki/rpm-gpg/saltstack-signing-key'
+    # Open up the archie version of the file and extract the repo data and key file
+    with tarfile.open(f'{rpm}.tgz', 'r') as rpm_data:
+        with rpm_data.extractfile(f'.{yum_file}') as repo_file:
+            repo_data = repo_file.read().decode()
+        rpm_data.extract('.' + yum_key, path=tmpdir)
+
 
     # verify repo file
-    yum_file = '/etc/yum.repos.d/salt-{0}{1}{2}.repo'.format('py3-' if 'py3' in url else '', 'amzn-' if 'amzn' in url else '', branch)
-    with open(yum_file, 'rt') as f:
-        repo_file = f.read()
     py_msg = 'for '
     py_pkg = ''
 
@@ -220,20 +236,16 @@ def _verify_rpm(url, branch):
                 "enabled=1\n"
                 "gpgcheck=1\n"
                 "gpgkey=file:///etc/pki/rpm-gpg/saltstack-signing-key\n").format(branch, 'Latest' if branch == 'latest' else branch, list(os_v)[-1:][0])
-    if not repo_file == repo_ret:
+
+    if not repo_data == repo_ret:
         raise Exception('{0} and {1} are not matching'.format(repo_file, repo_ret))
 
     # verify gpg key
-    installed_key = '/etc/pki/rpm-gpg/saltstack-signing-key'
-    with open(installed_key, 'rt') as f:
-        gpg_file = f.read()
+    installed_key = f'{tmpdir}/{yum_key}'
     _cmd_run(['rpm', '--import', installed_key])
     gpg_ret = _cmd_run(['rpm', '-qa', 'gpg-pubkey*'])['stdout'].decode()
     if 'gpg-pubkey-de57bfbe-53a9be98' not in gpg_ret:
         raise Exception('saltstacks key: gpg-pubkey-de57bfbe-53a9be98 not found in installed keys')
-
-    # remove rpm
-    _cmd_run(['yum', 'remove', '.'.join(rpm.split('/')[-1:][0].split('.')[:-1]), '-y'])
 
 
 def download_check(urls, salt_version, os_test, branch=None):
@@ -282,8 +294,7 @@ def download_check(urls, salt_version, os_test, branch=None):
                     pkg = str(pkg[0])
                 print('Checking for pkg: {0}'.format(pkg))
                 if pkg not in contents.lower():
-                    raise Exception('The dependency {0} from the url {1} is not \
-                          available.'.format(pkg, url))
+                    raise Exception('The dependency {0} from the url {1} is not available.'.format(pkg, url))
         else:
             pkg = _get_url(url, md5=True if 'md5' not in url else False)
 
