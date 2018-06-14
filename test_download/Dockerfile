@@ -1,9 +1,8 @@
-FROM centos:7
+FROM alpine:latest
 
-RUN yum -y install yum-utils
-RUN yum -y groupinstall development
-RUN yum -y install https://centos7.iuscommunity.org/ius-release.rpm
-RUN yum -y install python36u python36u-pip python36u-devel git
-RUN pip3.6 install bs4 requests
-RUN mkdir /testing/
-RUN git clone https://github.com/saltstack/salt-pkg-tests.git /testing/
+RUN apk --no-cache add python3 rpm
+RUN pip3 --no-cache-dir install --upgrade pip
+RUN pip3 --no-cache-dir install bs4 requests
+RUN mkdir -p /testing
+
+ADD ./download.py /testing/download.py
