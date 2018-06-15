@@ -70,7 +70,7 @@ def det_os_versions(os_v):
             'amzn': ['amzn'],
             'debian': ['debian8', 'debian9'],
             'redhat': ['redhat6', 'redhat7'],
-            'ubuntu': ['ubuntu14', 'ubuntu16'],
+            'ubuntu': ['ubuntu14', 'ubuntu16', 'ubuntu18'],
            }[os_v]
 
 def determine_release(current_os):
