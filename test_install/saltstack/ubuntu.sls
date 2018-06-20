@@ -18,7 +18,7 @@
 {% set repo_url = 'http://' + repo_url.split('https://')[1] %}
 {% set key_url = 'http://' + key_url.split('https://')[1] %}
 
-{% if params.os_release == '16.04' %}
+{% if params.os_release in ('16.04', '18.04') %}
 install-python-apt:
   pkg.installed:
     - name: python-apt

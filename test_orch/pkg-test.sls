@@ -94,6 +94,16 @@ install_python_{{ action }}:
       - salt-ssh {{ host }} -ir "yum -y install python2"
 {% endif %}
 
+{% if 'ubuntu18' in host %}
+{# install python2 so salt-ssh can work #}
+install_python_{{ action }}:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ orch_master }}
+    - arg:
+      - salt-ssh {{ host }} -ir "apt install python-minimal -y"
+{% endif %}
+
 verify_host_{{ action }}_{{ host }}:
   salt.function:
     - name: cmd.run

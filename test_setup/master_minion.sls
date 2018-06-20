@@ -75,7 +75,7 @@ enable_minion:
 
 wait_for_key:
   cmd.run:
-    - name: sleep {{ params.key_timeout }}
+    - name: sleep 160
     - require:
       - cmd: enable_master
       - cmd: enable_minion
