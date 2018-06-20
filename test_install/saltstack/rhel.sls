@@ -30,6 +30,11 @@
 {% set key_name = 'SALTSTACK-EL5-GPG-KEY.pub' if params.on_rhel_5 else 'SALTSTACK-GPG-KEY.pub' %}
 {% set key_url = '{0}/{1}'.format(repo_url, key_name) %}
 
+setup_ntp:
+  cmd.run:
+    - names:
+      - yum install ntp -y
+      - ntpdate -s time.nist.gov
 
 {% if params.use_repo_pkg %}
 add-repo:
@@ -72,6 +77,9 @@ update-package-database:
 upgrade-salt:
   cmd.run:
     - name: yum -y update {{ params.pkgs | join(' ') }}
+wait_for_upgrade_salt:
+  cmd.run:
+    - name: sleep 60
 
 {% else %}
 install-salt:
