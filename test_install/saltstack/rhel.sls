@@ -73,6 +73,12 @@ update-package-database:
       - pkgrepo: add-repo
       {% endif %}
 
+{% if params.crypto_library != 'default' %}
+install-crypto:
+  cmd.run:
+    - name: yum -y install {{ params.crypto_library }}
+{% endif %}
+
 {% if params.upgrade %}
 upgrade-salt:
   cmd.run:

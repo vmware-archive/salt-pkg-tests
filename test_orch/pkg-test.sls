@@ -138,6 +138,7 @@ test_install_{{ action }}:
         repo_user: {{ repo_user }}
         repo_passwd: {{ repo_passwd }}
         python3: {{ python3 }}
+        crypto_library: {{ params.crypto_library }}
 
 {% if upgrade_val == 'False' %}
 test_setup_{{ action }}:

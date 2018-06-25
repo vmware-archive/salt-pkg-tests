@@ -178,3 +178,6 @@
 {% set linux_master_passwd = salt['pillar.get']('linux_master_passwd') %}
 {% set win_arch = salt['pillar.get']('win_arch', '64') %}
 {% set git_user = salt['pillar.get']('git_user', 'saltstack') %}
+
+{# crypto variables #}
+{% set crypto_library = salt['pillar.get']('crypto_library', 'default') %}
