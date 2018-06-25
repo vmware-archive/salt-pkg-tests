@@ -13,7 +13,7 @@ api_config:
         rest_cherrypy:
           port: 8000
           disable_ssl: True
-          debug: True
+          debug: False
           host: 0.0.0.0
           webhook_url: /hook
           webhook_disable_auth: True
