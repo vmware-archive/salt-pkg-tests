@@ -261,6 +261,8 @@ def download_check(urls, salt_version, os_test, branch=None):
             url = auth[:a_len] + 'staging/' + auth[a_len:]
         if 'KEY' in url:
             _get_url(url)
+        elif 'salt-pack/issues' in url:
+            print('Skipping url due to it being a doc notice about an issue')
         elif not any(x in url for x in ['windows', 'osx']):
             pkgs = []
             if 'apt' in url:
