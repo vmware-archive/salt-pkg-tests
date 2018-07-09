@@ -40,7 +40,6 @@ check_cmd_file:
     - name: /tmp/check_cmd_returns.py
     - source: salt://test_run/files/check_cmd_returns.py
 
-
 compare_versions:
   cmd.run:
     - name: "{{ params.python_version }} /tmp/check_cmd_returns.py -m {{ params.minion_id }} -v {{ params.salt_version }}"
@@ -142,6 +141,7 @@ check_srpms:
     {% set services_disabled = [] %}
 {% endif %}
 
+{% if not params.on_smartos %}
 {% if '2016' not in params.salt_version %}
 {% for service in services_enabled %}
 
@@ -167,3 +167,5 @@ run_if_changes_{{ service }}:
       - service: check_services_disabled_{{ service }}
 {% endfor %}
 {% endif %}
+{% endif %}
+
