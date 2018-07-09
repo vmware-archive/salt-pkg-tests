@@ -1,9 +1,9 @@
 {# Import global parameters that source from grains and pillars #}
 {% import 'params.jinja' as params %}
 
-{% set pkg_ver = '2016Q4' %}
+{% set pkg_ver = '2018Q1' %}
 {% set pkg_arch = 'x86_64' %}
-{% set gpg_keyname = 'pbd-signature.key' %}
+{% set gpg_keyname = 'pbd-signature-{0}.key'.format(pkg_ver) %}
 {% set gpg_key_location = '/tmp/' + gpg_keyname %}
 {% set gpg_keyring = '/opt/local/etc/gnupg/pkgsrc.gpg' %}
 
