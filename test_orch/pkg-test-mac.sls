@@ -69,6 +69,12 @@ destroy_master_{{ host }}:
 {% endmacro %}
 
 {% macro create_vm(action='None') -%}
+accept_ssh_key_{{ action }}:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ orch_master }}
+    - arg:
+      - salt-ssh "{{ parallels_master }}" -i test.ping
 {% for profile in cloud_profile %}
 {% set host = username + profile + rand_name %}
 {% do hosts.append(host) %}
@@ -175,6 +181,7 @@ test_setup_{{ action }}:
     - tgt: {{ orch_master }}
     - sls:
       - test_setup.minion_only.macosx
+    - concurrent: True
     - pillar:
         salt_version: {{ salt_version }}
         minion_only: True
