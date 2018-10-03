@@ -153,7 +153,13 @@ bootstrap_master_{{ action }}:
     - pillar:
         salt_version: {{ salt_version }}
         bootstrap_repo: {{ bootstrap_repo }}
-
+    - require_in:
+      - salt: test_install_{{ action }}
+      - salt: disable_firewalld_{{ hosts[0] }}_{{ action }}
+      - salt: wait_for_firewall_{{ hosts }}_{{ action }}
+      - salt: accept_{{ hosts[0] }}_{{ action }}
+      - salt: sleep_after_accept_{{ hosts[0] }}_{{ action }}
+      - salt: test_run_{{ action }}
 
 test_install_{{ action }}:
   salt.state:
@@ -174,6 +180,12 @@ test_install_{{ action }}:
         repo_passwd: {{ repo_passwd }}
         master_host: {{ master_host }}
         python3: {{ params.python3 }}
+    - require_in:
+      - salt: disable_firewalld_{{ hosts[0] }}_{{ action }}
+      - salt: wait_for_firewall_{{ hosts }}_{{ action }}
+      - salt: accept_{{ hosts[0] }}_{{ action }}
+      - salt: sleep_after_accept_{{ hosts[0] }}_{{ action }}
+      - salt: test_run_{{ action }}
 
 {% if upgrade_val == 'False' %}
 test_setup_{{ action }}:
@@ -259,14 +271,24 @@ test_run_{{ action }}:
 {% for profile in cloud_profile %}
 {% set host = username + profile + rand_name %}
 
-clean_up_known_hosts_{{ action }}:
+{% for ssh_host in [host, master_host] %}
+clean_up_known_hosts_{{ ssh_host }}_{{ action }}:
   salt.function:
     - tgt: {{ orch_master }}
     - name: ssh.rm_known_host
     - arg:
       - root
-      - {{ host.lower() }}
+      - {{ ssh_host.lower() }}
 
+clean_ssh_roster_{{ ssh_host }}_{{ action }}:
+  salt.function:
+    - tgt: {{ orch_master }}
+    - name: roster.remove
+    - arg:
+      - /etc/salt/roster
+      - {{ ssh_host }}
+
+{% endfor %}
 {% endfor %}
 {%- endmacro %}
 

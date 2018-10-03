@@ -187,6 +187,14 @@ clean_up_known_hosts_{{ action }}:
       - root
       - {{ host.lower() }}
 
+clean_ssh_roster_{{ action }}:
+  salt.function:
+    - tgt: {{ orch_master }}
+    - name: roster.remove
+    - arg:
+      - /etc/salt/roster
+      - {{ host }}
+
 {% endfor %}
 {%- endmacro %}
 

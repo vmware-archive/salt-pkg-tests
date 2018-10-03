@@ -144,10 +144,33 @@ upgrade_salt_{{ action }}:
         repo_auth: {{ params.repo_auth }}
 {%- endmacro %}
 
+{% macro clean_up(action='None') -%}
+{% for profile in cloud_profile %}
+{% set host = username + profile + rand_name %}
+
+clean_up_known_hosts_{{ action }}:
+  salt.function:
+    - tgt: {{ orch_master }}
+    - name: ssh.rm_known_host
+    - arg:
+      - root
+      - {{ host.lower() }}
+
+clean_ssh_roster_{{ action }}:
+  salt.function:
+    - tgt: {{ orch_master }}
+    - name: roster.remove
+    - arg:
+      - /etc/salt/roster
+      - {{ host }}
+
+{% endfor %}
+{%- endmacro %}
 
 {% if clean %}
 {{ create_vm(salt_version, action='clean') }}
 {{ test_run(salt_version, action='clean') }}
+{{ clean_up(action='clean') }}
 {{ destroy_vm() }}
 {% endif %}
 
@@ -156,5 +179,6 @@ upgrade_salt_{{ action }}:
 {{ test_run(upgrade_salt_version, action='preupgrade') }}
 {{ upgrade_salt(salt_version, action='upgrade') }}
 {{ test_run(salt_version, action='after_upgrade') }}
+{{ clean_up(action='upgrade') }}
 {{ destroy_vm() }}
 {% endif %}
