@@ -104,6 +104,27 @@ install_python_{{ action }}:
       - salt-ssh {{ host }} -ir "apt install python-minimal -y"
 {% endif %}
 
+{% if 'redhat6' in host or 'cent6' in host %}
+{# install python2.7 so salt-ssh can work #}
+install_python_{{ action }}:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ orch_master }}
+    - arg:
+      - salt-ssh {{ host }} -ir "yum install https://repo.saltstack.com/yum/redhat/salt-repo-latest-2.el6.noarch.rpm -y; yum install python27 -y"
+
+remove_salt_repo_{{ action }}:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ orch_master }}
+    - arg:
+      - salt-ssh {{ host }} -ir "yum remove salt-repo-latest -y"
+    - require:
+      - salt: install_python_{{ action }}
+
+{% endif %}
+
+
 verify_host_{{ action }}_{{ host }}:
   salt.function:
     - name: cmd.run

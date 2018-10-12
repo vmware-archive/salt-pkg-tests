@@ -4,13 +4,23 @@
 {# Parameters used with repo package install #}
 {% set branch = params.salt_version.rsplit('.', 1)[0] %}
 
+{% if params.on_amazon2 %}
+  {% set path_version = '2' %}
+  {% set amzn_version = 'amzn2' %}
+  {% set repo_pkg_name = 'amzn2' %}
+{% else %}
+  {% set path_version = 'latest' %}
+  {% set amzn_version = 'amzn1' %}
+  {% set repo_pkg_name = 'amzn' %}
+{% endif %}
+
 {% if params.use_latest %}
-  {% set repo_url = 'https://{0}repo.saltstack.com/{1}{2}/amazon/latest/$basearch/latest'.format(params.repo_auth, params.dev, params.py_dir) %}
-  {% set repo_pkg = 'salt-amzn-repo-{0}{1}.amzn1.noarch.rpm'.format(branch, params.repo_pkg_version) %}
+  {% set repo_url = 'https://{0}repo.saltstack.com/{1}{2}/amazon/{3}/$basearch/latest'.format(params.repo_auth, params.dev, params.py_dir, path_version) %}
+  {% set repo_pkg = 'salt-{0}-repo-{1}{2}.{3}.noarch.rpm'.format(repo_pkg_name, branch, params.repo_pkg_version, amzn_version) %}
   {% set repo_pkg_url = 'https://repo.saltstack.com/{0}{1}/amazon/{2}'.format(params.dev, params.py_dir, repo_pkg) %}
 {% elif params.test_rc_pkgs %}
-  {% set repo_url = 'https://repo.saltstack.com/{0}salt_rc/{1}/amazon/latest/$basearch'.format(params.dev, params.py_dir) %}
-  {% set repo_pkg = 'salt-amzn-repo-{0}{1}.amzn1.noarch.rpm'.format(branch, params.repo_pkg_version) %}
+  {% set repo_url = 'https://repo.saltstack.com/{0}salt_rc/{1}/amazon/{2}/$basearch'.format(params.dev, params.py_dir, path_version) %}
+  {% set repo_pkg = 'salt-{0}-repo-{1}{2}.{3}.noarch.rpm'.format(repo_pkg_name, branch, params.repo_pkg_version, path_version) %}
   {% set repo_pkg_url = 'https://repo.saltstack.com/{0}salt_rc/{1}/amazon/{2}'.format(params.dev, params.py_dir, repo_pkg) %}
 {% elif branch == '2016.3' %}
   {% set repo_url = 'https://{0}repo.saltstack.com/{1}{2}/redhat/6/$basearch/archive/{3}' %}
@@ -18,9 +28,9 @@
   {% set repo_pkg = 'salt-amzn-repo-{0}{1}.ami.noarch.rpm'.format(branch, params.repo_pkg_version) %}
   {% set repo_pkg_url = 'https://{0}repo.saltstack.com/{1}{2}/amazon/{3}'.format(params.repo_auth, params.dev, params.py_dir, repo_pkg) %}
 {% else %}
-  {% set repo_url = 'https://{0}repo.saltstack.com/{1}{2}/amazon/latest/$basearch/archive/{3}' %}
-  {% set repo_url = repo_url.format(params.repo_auth, params.dev, params.py_dir, params.salt_version) %}
-  {% set repo_pkg = 'salt-amzn-repo-{0}{1}.amzn1.noarch.rpm'.format(branch, params.repo_pkg_version) %}
+  {% set repo_url = 'https://{0}repo.saltstack.com/{1}{2}/amazon/{3}/$basearch/archive/{4}' %}
+  {% set repo_url = repo_url.format(params.repo_auth, params.dev, params.py_dir, path_version, params.salt_version) %}
+  {% set repo_pkg = 'salt-{0}-repo-{1}{2}.{3}.noarch.rpm'.format(repo_pkg_name, branch, params.repo_pkg_version, amzn_version) %}
   {% set repo_pkg_url = 'https://{0}repo.saltstack.com/{1}{2}/amazon/{3}'.format(params.repo_auth, params.dev, params.py_dir, repo_pkg) %}
 {% endif %}
 

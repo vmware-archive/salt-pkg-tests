@@ -24,6 +24,7 @@
 {% set on_deb_7 = True if os_family == 'Debian' and os_major_release == '7' else False %}
 {% set on_smartos = True if os == 'SmartOS' else False %}
 {% set on_amazon = True if os == 'Amazon' else False %}
+{% set on_amazon2 = True if os_code_name == 'Amazon Linux 2' else False %}
 {% set on_rhel = True if os_family == 'RedHat' else False %}
 {% set on_debian = True if os_family == 'Debian' else False %}
 
