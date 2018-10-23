@@ -8,4 +8,4 @@ get_bootstrap:
 
 install_bootstrap:
   cmd.run:
-    - name: sudo sh bootstrap-salt.sh -M -g https://github.com/{{ bootstrap_repo }}/salt.git git v{{ params.salt_version }}
+    - name: sudo sh bootstrap-salt.sh -q -M -g https://github.com/{{ bootstrap_repo }}/salt.git git v{{ params.salt_version }}
