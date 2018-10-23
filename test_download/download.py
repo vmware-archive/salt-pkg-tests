@@ -67,7 +67,7 @@ def det_os_versions(os_v):
     return {'mac': ['mac'],
             'windows': ['windows'],
             'raspbian': ['raspbian'],
-            'amzn': ['amzn'],
+            'amzn': ['amzn2', 'amzn'],
             'debian': ['debian8', 'debian9'],
             'redhat': ['redhat6', 'redhat7'],
             'ubuntu': ['ubuntu14', 'ubuntu16', 'ubuntu18'],
@@ -171,6 +171,9 @@ def _get_dependencies(url):
             deps.remove(comment.split('.')[1].split('-')[-1:][0])
 
     remove_deps = ['importlib', 'pyzmq', 'ssl_match_hostname']
+    # openssl pkg is no longer required for redhat7 python 3 as its already availabe
+    if 'py3/redhat/7' in url:
+        remove_deps.append('openssl')
     if 'armhf' in url:
         remove_deps = ['libnacl', 'cherrypy', 'croniter', 'crypto', 'enum34',
                        'jinja2', 'libnacl', 'msgpack', 'requests', 'urllib3',
@@ -190,8 +193,14 @@ def _verify_rpm(url, branch):
     print('Checking rpm validity: {0}'.format(url))
     ret = _cmd_run(['rpm2archive', rpm])
 
+    if 'amzn2' in url:
+        amzn = 'amzn2-'
+    elif 'amzn' in url:
+        amzn = 'amzn-'
+    else:
+        amzn = ''
     # Set the correct yum file location in the archive
-    yum_file = '/etc/yum.repos.d/salt-{0}{1}{2}.repo'.format('py3-' if 'py3' in url else '', 'amzn-' if 'amzn' in url else '', branch)
+    yum_file = '/etc/yum.repos.d/salt-{0}{1}{2}.repo'.format('py3-' if 'py3' in url else '', amzn, branch)
     # The signing key location in the yum archive
     yum_key = '/etc/pki/rpm-gpg/saltstack-signing-key'
     # Open up the archie version of the file and extract the repo data and key file
@@ -227,7 +236,17 @@ def _verify_rpm(url, branch):
                                                                              py_msg,
                                                                              branch,
                                                                              'py3' if 'py3' in url else 'yum')
-    if 'amzn' in url:
+    if 'amzn2' in url:
+        repo_ret = ("[salt-amzn2-{0}]\n"
+                "name=SaltStack {1} Release Channel for native Amazon Linux 2\n"
+                "baseurl=https://repo.saltstack.com/yum/amazon/$releasever/$basearch/{0}\n"
+                "failovermethod=priority\n"
+                "priority=10\n"
+                "enabled=1\n"
+                "gpgcheck=1\n"
+                "gpgkey=file:///etc/pki/rpm-gpg/saltstack-signing-key\n").format(branch, 'Latest' if branch == 'latest' else branch, list(os_v)[-1:][0])
+
+    elif 'amzn' in url:
         repo_ret = ("[salt-amzn-{0}]\n"
                 "name=SaltStack {1} Release Channel for native Amazon Linux\n"
                 "baseurl=https://repo.saltstack.com/yum/amazon/$releasever/$basearch/{0}\n"
