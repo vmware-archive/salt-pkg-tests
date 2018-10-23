@@ -130,7 +130,11 @@ def _get_url(url, md5=False):
         # check hashes
         pkg_hash = hashlib.md5(open(pkg,'rb').read()).hexdigest()
         print('comparing hashes for {0} and {1}'.format(pkg, md5))
-        with open(md5, 'rt', encoding='utf_16') as f:
+        encoding='utf_16'
+        if '2017.7' in url:
+            if 'osx' in url:
+                encoding='ascii'
+        with open(md5, 'rt', encoding=encoding) as f:
             md5_hash = f.read().split()[0].lower()
         try:
             assert md5_hash == pkg_hash
@@ -292,14 +296,18 @@ def download_check(urls, salt_version, os_test, branch=None):
                     _verify_rpm(url, branch)
                     _get_url(url)
                 if any(x in url for x in ['$releasever', '$basearch']):
-                    url = url.replace('$releasever', os_v[-1:]).replace('$basearch', 'x86_64') + salt_version
+                    url = url.replace('$releasever',
+                                      os_v[-1:]).replace('$basearch', 'x86_64')+ salt_version + '/'
                 if 'archive' not in url and 'redhat' in url:
-                    url = '/'.join(url.split('/')[:-1]) + '/' + os_v[-1:] + '/x86_64/' + branch
+                    url = '/'.join(url.split('/')[:-1]) + '/' + os_v[-1:] + '/x86_64/' + branch + '/'
                 elif 'archive' not in url and 'amazon' in url:
-                    url = '/'.join(url.split('/')[:-1]) + '/latest/x86_64/' + branch
+                    url = '/'.join(url.split('/')[:-1]) + '/latest/x86_64/' + branch + '/'
                 pkg_format = '-'
                 pkgs.append('salt-{1}'.format(pkg_format, salt_version))
 
+            # we found a github issues url. Do not need to check
+            if 'github.com' in url:
+                return True
             pkgs.extend(_get_dependencies(url))
             pkgs.extend(['salt-api{0}{1}'.format(pkg_format, salt_version),
                          'salt-cloud{0}{1}'.format(pkg_format, salt_version),
@@ -317,6 +325,9 @@ def download_check(urls, salt_version, os_test, branch=None):
                 if pkg not in contents.lower():
                     raise Exception('The dependency {0} from the url {1} is not available.'.format(pkg, url))
         else:
+            if 'sha256' in url:
+                # todo: add sha256 url checker
+                return True
             pkg = _get_url(url, md5=True if 'md5' not in url else False)
 
 def parse_html_method(tab_os, os_v, args):
