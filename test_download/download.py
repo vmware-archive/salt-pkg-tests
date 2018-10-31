@@ -243,7 +243,7 @@ def _verify_rpm(url, branch):
     if 'amzn2' in url:
         repo_ret = ("[salt-amzn2-{0}]\n"
                 "name=SaltStack {1} Release Channel for native Amazon Linux 2\n"
-                "baseurl=https://repo.saltstack.com/yum/amazon/$releasever/$basearch/{0}\n"
+                "baseurl=https://repo.saltstack.com/yum/amazon/2/$basearch/{0}\n"
                 "failovermethod=priority\n"
                 "priority=10\n"
                 "enabled=1\n"
