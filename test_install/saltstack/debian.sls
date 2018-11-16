@@ -47,14 +47,18 @@ update-package-database:
 {% if params.upgrade %}
 upgrade-salt:
   cmd.run:
-    - name: apt-get install -y -o Dpkg::Options::="--force-confdef" --only-upgrade {{ params.pkgs | join(' ') }}
+    - name: apt-get install --no-install-recommends -y -o Dpkg::Options::="--force-confdef" --only-upgrade {{ params.pkgs | join(' ') }}
 
 {% else %}
 
 install-salt:
   cmd.run:
-    - name: apt-get -y install {{ params.versioned_pkgs | join(' ') }}
+    - name: apt-get --no-install-recommends -y install {{ params.versioned_pkgs | join(' ') }}
     - require:
       - module: update-package-database
+
+install-cherrypy:
+  cmd.run:
+    - name: apt-get -y install python-cherrypy3
 
 {% endif %}

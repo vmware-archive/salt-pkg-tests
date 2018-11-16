@@ -201,12 +201,13 @@ test_run_{{ action }}:
 {% set host = username + profile + rand_name %}
 
 clean_up_known_hosts_{{ action }}:
-  salt.function:
+  salt.state:
     - tgt: {{ orch_master }}
-    - name: ssh.rm_known_host
-    - arg:
-      - root
-      - {{ host.lower() }}
+    - tgt_type: list
+    - sls:
+      - test_orch.states.rm_known_hosts
+    - pillar:
+        host: {{ host }}
 
 clean_ssh_roster_{{ action }}:
   salt.function:
