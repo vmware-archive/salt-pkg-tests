@@ -6,6 +6,7 @@ import hashlib
 import requests
 import re
 import os
+import sys
 import subprocess
 import tempfile
 import tarfile
@@ -131,11 +132,17 @@ def _get_url(url, md5=False):
         pkg_hash = hashlib.md5(open(pkg,'rb').read()).hexdigest()
         print('comparing hashes for {0} and {1}'.format(pkg, md5))
         encoding='utf_16'
-        if '2017.7' in url:
-            if 'osx' in url:
+        while True:
+            try:
+                with open(md5, 'rt', encoding=encoding) as f:
+                    md5_hash = f.read().split()[0].lower()
+                break
+            except UnicodeDecodeError as e:
+                if encoding == 'ascii':
+                    print('Error when attempting to read file {0} with encoding {1}'.format(md5, encoding))
+                    sys.exit(1)
                 encoding='ascii'
-        with open(md5, 'rt', encoding=encoding) as f:
-            md5_hash = f.read().split()[0].lower()
+                continue
         try:
             assert md5_hash == pkg_hash
         except AssertionError as e:
