@@ -27,7 +27,7 @@ key:
 
 sleep:
   cmd.run:
-    - name: sleep 24
+    - name: sleep 80
 
 versions:
   cmd.run:
