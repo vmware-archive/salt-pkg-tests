@@ -13,7 +13,7 @@ import tarfile
 
 # Miscellaneous variables
 TMP_DIR = tempfile.mkdtemp()
-LATEST = '2018.3'
+LATEST = '2019.2'
 
 check_steps = []
 os_tabs = ['tab1-mac', 'tab1-windows', 'tab1-raspbian', 'tab2-raspbian', 'tab3-raspbian',
@@ -181,7 +181,10 @@ def _get_dependencies(url):
         for comment in comments:
             deps.remove(comment.split('.')[1].split('-')[-1:][0])
 
-    remove_deps = ['importlib', 'pyzmq', 'ssl_match_hostname']
+    remove_deps = ['importlib', 'pyzmq', 'ssl_match_hostname', 'systemd',
+                   'simplejson']
+    if 'py3' in url:
+        remove_deps.append('psutil')
     # openssl pkg is no longer required for redhat7 python 3 as its already availabe
     if 'py3/redhat/7' in url:
         remove_deps.append('openssl')
@@ -227,7 +230,7 @@ def _verify_rpm(url, branch):
 
     if 'repo-' in url and '2017' not in args.branch:
         if 'py3' in url:
-            if '2018.3' in url:
+            if any(x in url for x in ['2018.3', '2019.2']):
                 py_msg = 'for Python 3 '
             else:
                 py_msg = 'Python 3 for '
