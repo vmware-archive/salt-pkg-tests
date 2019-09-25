@@ -71,7 +71,7 @@ def det_os_versions(os_v):
             'amzn': ['amzn2', 'amzn'],
             'debian': ['debian8', 'debian9'],
             'redhat': ['redhat6', 'redhat7'],
-            'ubuntu': ['ubuntu14', 'ubuntu16', 'ubuntu18'],
+            'ubuntu': ['ubuntu16', 'ubuntu18'],
            }[os_v]
 
 def determine_release(current_os):
@@ -187,7 +187,10 @@ def _get_dependencies(url):
         remove_deps.append('psutil')
     # openssl pkg is no longer required for redhat7 python 3 as its already availabe
     if 'py3/redhat/7' in url:
-        remove_deps.append('openssl')
+        remove_deps = ['openssl', 'pycryptodome', 'pyzmq']
+    if 'py3/amazon' in url:
+        remove_deps = ['enum34', 'impacket', 'ioflo', 'libnacl',
+                       'pyzmq', 'raet', 'winexe' ]
     if 'armhf' in url:
         remove_deps = ['libnacl', 'cherrypy', 'croniter', 'crypto', 'enum34',
                        'jinja2', 'libnacl', 'msgpack', 'requests', 'urllib3',
@@ -238,19 +241,44 @@ def _verify_rpm(url, branch):
         elif 'latest' not in url:
             py_msg = 'for Python 2 '
 
-    repo_ret = ("[salt-{0}]\n"
-            "name=SaltStack {1} Release Channel {3}RHEL/Centos $releasever\n"
-            "baseurl=https://repo.saltstack.com/{5}/redhat/{2}/$basearch/{4}\n"
-            "failovermethod=priority\n"
-            "enabled=1\n"
-            "gpgcheck=1\n"
-            "gpgkey=file:///etc/pki/rpm-gpg/saltstack-signing-key\n").format(py_pkg + branch,
-                                                                             'Latest' if branch == 'latest' else branch,
-                                                                             list(os_v)[-1:][0],
-                                                                             py_msg,
-                                                                             branch,
-                                                                             'py3' if 'py3' in url else 'yum')
-    if 'amzn2' in url:
+    if 'el6' not in url:
+        repo_ret = ("[salt-{0}]\n"
+                "name=SaltStack {1} Release Channel {3}RHEL/Centos $releasever\n"
+                "baseurl=https://repo.saltstack.com/{5}/redhat/{2}/$basearch/{4}\n"
+                "failovermethod=priority\n"
+                "enabled=1\n"
+                "gpgcheck=1\n"
+                "gpgkey=file:///etc/pki/rpm-gpg/saltstack-signing-key, file:///etc/pki/rpm-gpg/centos7-signing-key{6}").format(py_pkg + branch,
+                                                                                 'Latest' if branch == 'latest' else branch,
+                                                                                 list(os_v)[-1:][0],
+                                                                                 py_msg,
+                                                                                 branch,
+                                                                                 'py3' if 'py3' in url else 'yum',
+                                                                                 '\n' if 'py3' in url else ' \n')
+    else:
+        repo_ret = ("[salt-{0}]\n"
+                "name=SaltStack {1} Release Channel {3}RHEL/Centos $releasever\n"
+                "baseurl=https://repo.saltstack.com/{5}/redhat/{2}/$basearch/{4}\n"
+                "failovermethod=priority\n"
+                "enabled=1\n"
+                "gpgcheck=1\n"
+                "gpgkey=file:///etc/pki/rpm-gpg/saltstack-signing-key\n").format(py_pkg + branch,
+                                                                                 'Latest' if branch == 'latest' else branch,
+                                                                                 list(os_v)[-1:][0],
+                                                                                 py_msg,
+                                                                                 branch,
+                                                                                 'py3' if 'py3' in url else 'yum')
+    if 'py3-amzn2' in url:
+        repo_ret = ("[salt-py3-amzn2-{0}]\n"
+                    "name=SaltStack Python 3 {1} Release Channel for native Amazon Linux 2\n"
+                    "baseurl=https://repo.saltstack.com/py3/amazon/2/$basearch/{0}\n"
+                    "failovermethod=priority\n"
+                    "priority=10\n"
+                    "enabled=1\n"
+                    "gpgcheck=1\n"
+                    "gpgkey=file:///etc/pki/rpm-gpg/saltstack-signing-key\n").format(branch, 'Latest' if branch == 'latest' else branch, list(os_v)[-1:][0])
+
+    elif 'amzn2' in url:
         repo_ret = ("[salt-amzn2-{0}]\n"
                 "name=SaltStack {1} Release Channel for native Amazon Linux 2\n"
                 "baseurl=https://repo.saltstack.com/yum/amazon/2/$basearch/{0}\n"
@@ -270,8 +298,8 @@ def _verify_rpm(url, branch):
                 "gpgcheck=1\n"
                 "gpgkey=file:///etc/pki/rpm-gpg/saltstack-signing-key\n").format(branch, 'Latest' if branch == 'latest' else branch, list(os_v)[-1:][0])
 
-    if not repo_data == repo_ret:
-        raise Exception('{0} and {1} are not matching'.format(repo_file, repo_ret))
+    if not repo_data.strip() in repo_ret:
+        raise Exception('{0} and {1} are not matching'.format(repo_data, repo_ret))
 
     # verify gpg key
     installed_key = f'{tmpdir}/{yum_key}'
@@ -298,7 +326,7 @@ def download_check(urls, salt_version, os_test, branch=None):
             print('Skipping url due to it being a doc notice about an issue')
         elif not any(x in url for x in ['windows', 'osx']):
             pkgs = []
-            if 'apt' in url:
+            if 'apt' in url or 'debian' in url:
                 pkg_format = '_'
                 pkgs.append('salt-common{0}{1}'.format(pkg_format, salt_version))
             if any(x in url for x in ['redhat', 'amazon']):
@@ -310,6 +338,8 @@ def download_check(urls, salt_version, os_test, branch=None):
                                       os_v[-1:]).replace('$basearch', 'x86_64')+ salt_version + '/'
                 if 'archive' not in url and 'redhat' in url:
                     url = '/'.join(url.split('/')[:-1]) + '/' + os_v[-1:] + '/x86_64/' + branch + '/'
+                elif 'archive' not in url and 'py3/amazon' in url:
+                    url = '/'.join(url.split('/')[:-1]) + '/2/x86_64/' + branch + '/'
                 elif 'archive' not in url and 'amazon' in url:
                     url = '/'.join(url.split('/')[:-1]) + '/latest/x86_64/' + branch + '/'
                 pkg_format = '-'
@@ -357,7 +387,7 @@ def parse_html_method(tab_os, os_v, args):
 
     # Get and Parse index page
     if args.staging:
-        url = 'https://{0}:{1}@repo.saltstack.com/staging/{2}.html'.format(args.user, args.passwd,
+        url = 'https://{0}:{1}@staging.repo.saltstack.com/{2}.html'.format(args.user, args.passwd,
                                                                           'index' if args.branch == LATEST else args.branch)
     else:
         url = 'https://repo.saltstack.com/{0}.html'.format('index' if args.branch == LATEST else args.branch)
