@@ -25,9 +25,10 @@ refresh_backup:
 {% for pkg in params.pkgs %}
 {% set pkg_name = pkg + '-' + params.salt_version + '-' + params.pkg_version + '.noarch.rpm' %}
 get-{{ pkg }}:
-  cmd.run:
+  cmd.run: 
     - name: wget -O /tmp/{{ pkg_name }} {{ params.pkg_urls[pkg] }}
 {% endfor %}
+
 install-pkgs:
   cmd.run:
     - name: dnf -y install {{ params.pkg_files | join(' ') }}

@@ -76,8 +76,10 @@ def get_url(args):
         url = repo_url + debian_url + os_v + debian_arch + version
     elif 'ubuntu' in args.os:
         url = repo_url + ubuntu_url + os_v + debian_arch + version
-    elif 'pi' in args.os:
+    elif 'pi8' in args.os:
         url = repo_url + debian_url + '8' + pi_arch + version
+    elif 'pi9' in args.os:
+        url = repo_url + debian_url + '9' + pi_arch + version
     elif 'osx' in args.os:
         url = repo_url + 'osx'
     elif 'amazon' in args.os:
@@ -90,7 +92,7 @@ def get_url(args):
     return url
 
 def get_salt_version(url, args, prev_branch=False):
-    if 'osx' not in url and prev_branch:
+    if 'windows' not in url and 'osx' not in url and prev_branch:
         url = url.replace(url.split('/')[-1], args)
     get_url = requests.get(url)
     ret_code = get_url.status_code
@@ -106,7 +108,10 @@ def get_salt_version(url, args, prev_branch=False):
         except AttributeError:
             pkg_name = 'salt-{0}'.format(args)
     if 'windows' in url:
-        pkg_name = 'Salt-Minion-{0}'.format(args.branch)
+        try:
+            pkg_name = 'Salt-Minion-{0}'.format(args.branch)
+        except AttributeError:
+            pkg_name = 'Salt-Minion-{0}'.format(args)
 
     for tag in parse_html.findAll(attrs={'href': re.compile(pkg_name +
                                                            ".*")}):
@@ -120,10 +125,12 @@ def set_env_vars(**kwargs):
     year = ver_split[0]
     month = ver_split[1]
     release = ver_split[2]
-    upgrade_from_version = year + '.' + month + '.' + str((int(release) -1))
-    if kwargs['salt_version'].split('.')[-1:][0] == '0':
-        upgrade_from_version = get_salt_version(kwargs['url'], kwargs['prev_branch'], prev_branch=True)
     branch = year + '.' + month
+
+    if kwargs['salt_version'].split('.')[-1:][0] == '0':
+        upgrade_from_version = get_salt_version(kwargs['url'].replace('staging', ''), kwargs['prev_branch'], prev_branch=True)
+    else:
+        upgrade_from_version = get_salt_version(kwargs['url'].replace('staging', ''), branch)
 
     output = []
     output.append('SALT_VERSION={0}'.format(salt_version))

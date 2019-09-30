@@ -18,6 +18,11 @@
 {% set repo_url = 'http://' + repo_url.split('https://')[1] %}
 {% set key_url = 'http://' + key_url.split('https://')[1] %}
 
+{% set cherrypy = 'python-cherrypy3' %}
+{% if params.python3 %}
+    {% set cherrypy = 'python3-cherrypy3' %}
+{% endif %}
+
 {% if params.os_release in ('16.04', '18.04') %}
 install-python-apt:
   pkg.installed:
@@ -57,6 +62,6 @@ install-salt:
 
 install-cherrypy:
   cmd.run:
-    - name: apt-get -y install python-cherrypy3
+    - name: apt-get -y install {{ cherrypy }}
 
 {% endif %}

@@ -23,7 +23,7 @@ refresh_win_db:
     - name: salt -G 'os:windows' pkg.refresh_db
 upgrade_minion:
   cmd.run:
-    - name: salt -G 'os:windows' pkg.install cust_salt_minion -t 30
+    - name: salt -G 'os:windows' pkg.install cust_salt_minion -t 150
 wait_for_upgrade:
   cmd.run:
-    - name: sleep 160
+    - name: sleep 700

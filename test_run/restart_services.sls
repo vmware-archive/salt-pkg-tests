@@ -9,5 +9,5 @@ restart_{{ service }}:
 sleep_wait_for_restart_{{ service }}:
   module.run:
     - name: test.sleep
-    - length: 10
+    - length: 100
 {% endfor %}
