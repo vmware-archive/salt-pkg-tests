@@ -126,10 +126,9 @@ def set_env_vars(**kwargs):
     month = ver_split[1]
     release = ver_split[2]
     branch = year + '.' + month
-#    upgrade_from_version = year + '.' + month + '.' + str((int(release) -1))
+
     if kwargs['salt_version'].split('.')[-1:][0] == '0':
         upgrade_from_version = get_salt_version(kwargs['url'].replace('staging', ''), kwargs['prev_branch'], prev_branch=True)
-        #upgrade_from_version = get_salt_version(kwargs['url'], kwargs['prev_branch'], prev_branch=True)
     else:
         upgrade_from_version = get_salt_version(kwargs['url'].replace('staging', ''), branch)
 
