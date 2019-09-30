@@ -8,7 +8,7 @@
   {% set repo_url = 'https://repo.saltstack.com/{0}salt_rc/{1}/debian/{2}/{3}/' %}
   {% set repo_url = repo_url.format(params.dev, params.py_dir, params.os_major_release, params.os_arch) %}
 {% else %}
-  {% set repo_url = 'https://{0}repo.saltstack.com/{1}{2}/debian/{3}/{4}/archive/{5}' %} 
+  {% set repo_url = 'https://{0}repo.saltstack.com/{1}{2}/debian/{3}/{4}/archive/{5}' %}
   {% set repo_url = repo_url.format(params.repo_auth, params.dev, params.py_dir, params.os_major_release, params.os_arch, params.salt_version) %}
 {% endif %}
 
