@@ -30,18 +30,6 @@
 {% set key_name = 'SALTSTACK-EL5-GPG-KEY.pub' if params.on_rhel_5 else 'SALTSTACK-GPG-KEY.pub' %}
 {% set key_url = '{0}/{1}'.format(repo_url, key_name) %}
 
-{% set fips_enabled = salt['cmd.run']('cat /proc/sys/crypto/fips_enabled') %}
-{% if params.python3 and fips_enabled != 1 %}
-install_IUS:
-  pkg.installed:
-    - sources:
-      - ius-release: https://centos7.iuscommunity.org/ius-release.rpm
-
-install_python34:
-  pkg.installed:
-    - name: python34u
-{% endif %}
-
 setup_ntp:
   cmd.run:
     - names:

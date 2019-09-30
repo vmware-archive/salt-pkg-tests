@@ -1,5 +1,5 @@
 {% set minion_id = '*win*' %}
-{% set timeout = '-t 199' %}
+{% set timeout = '-t 599' %}
 
 
 # The top level cmd.run statements here are instructions to the salt-ssh minion,
@@ -74,6 +74,11 @@ state:
       - salt {{ minion_id }} state.sls states {{ timeout }}
     - require:
       - file: state_file
+
+versions3:
+  cmd.run:
+    - names:
+      - salt {{ minion_id }} test.versions_report {{ timeout }}
 
 salt-call:
   cmd.run:

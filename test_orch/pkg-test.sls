@@ -65,7 +65,7 @@ wait_for_dns:
     - concurrent: True
     - sls:
       - test_orch.states.wait_for_dns
-    - timeout: 200
+    - timeout: 999
     - pillar:
         hostname: {{ host }}
     - require:
@@ -96,6 +96,12 @@ install_python_{{ action }}:
 
 {% if 'ubuntu18' in host %}
 {# install python2 so salt-ssh can work #}
+update_{{ action }}:
+  salt.function:
+    - name: cmd.run
+    - tgt: {{ orch_master }}
+    - arg:
+      - salt-ssh {{ host }} -ir "apt-get update -y"
 install_python_{{ action }}:
   salt.function:
     - name: cmd.run
@@ -204,6 +210,7 @@ clean_up_known_hosts_{{ action }}:
   salt.state:
     - tgt: {{ orch_master }}
     - tgt_type: list
+    - concurrent: True
     - sls:
       - test_orch.states.rm_known_hosts
     - pillar:

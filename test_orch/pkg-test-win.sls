@@ -147,14 +147,14 @@ upgrade_salt_{{ action }}:
 {% macro clean_up(action='None') -%}
 {% for profile in cloud_profile %}
 {% set host = username + profile + rand_name %}
-
 clean_up_known_hosts_{{ action }}:
-  salt.function:
+  salt.state:
     - tgt: {{ orch_master }}
-    - name: ssh.rm_known_host
-    - arg:
-      - root
-      - {{ host.lower() }}
+    - tgt_type: list
+    - sls:
+      - test_orch.states.rm_known_hosts
+    - pillar:
+        host: {{ linux_master }}
 
 clean_ssh_roster_{{ action }}:
   salt.function:
@@ -162,7 +162,7 @@ clean_ssh_roster_{{ action }}:
     - name: roster.remove
     - arg:
       - /etc/salt/roster
-      - {{ host }}
+      - {{ linux_master }}
 
 {% endfor %}
 {%- endmacro %}
