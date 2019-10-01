@@ -1,5 +1,5 @@
 {% set minion_id = '*win*' %}
-{% set timeout = '-t 599' %}
+{% set timeout = '-t 99' %}
 
 
 # The top level cmd.run statements here are instructions to the salt-ssh minion,
@@ -17,23 +17,12 @@ key:
 versions:
   cmd.run:
     - names:
-      - salt {{ minion_id }} test.versions_report {{ timeout }}
-
-versions1:
-  cmd.run:
-    - names:
-      - salt {{ minion_id }} test.versions_report {{ timeout }}
-
-versions2:
-  cmd.run:
-    - names:
+      - sleep 100
       - salt {{ minion_id }} test.versions_report {{ timeout }}
 
 grains:
   cmd.run:
     - names:
-      - salt {{ minion_id }} grains.item os {{ timeout }}
-{# run this command twice as a workaround for an issue with windows and running second command during automation #}
       - salt {{ minion_id }} grains.item os {{ timeout }}
       - salt {{ minion_id }} grains.item pythonversion {{ timeout }}
       - salt {{ minion_id }} grains.setval key val {{ timeout }}
@@ -74,11 +63,6 @@ state:
       - salt {{ minion_id }} state.sls states {{ timeout }}
     - require:
       - file: state_file
-
-versions3:
-  cmd.run:
-    - names:
-      - salt {{ minion_id }} test.versions_report {{ timeout }}
 
 salt-call:
   cmd.run:
