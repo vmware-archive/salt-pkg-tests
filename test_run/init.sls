@@ -4,6 +4,7 @@
 {% set upgrade = salt['pillar.get']('upgrade') %}
 
 include:
+  - test_run.check_imports
 {# restart services that don't auto start on upgrade #}
 {% if ('2016' in params.salt_version or not systemd_exists) and upgrade %}
   - test_run.restart_services
