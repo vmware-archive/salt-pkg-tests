@@ -108,13 +108,23 @@ salt-call:
 
 {% set srpms_test = False %}
 {% if params.os == 'RedHat' or params.os == 'CentOS' %}
+  {% if params.python3 == True %}
+    {% set srpms_pkg = 'salt-{0}-1.el{2}.src.rpm'.format(params.salt_version, params.repo_pkg_version, params.os_major_release) %}
+    {% set srpms_test = 'https://{0}repo.saltstack.com/{1}/py3/redhat/{2}/x86_64/archive/{3}/SRPMS/{4}'.format(params.repo_auth, params.dev, params.os_major_release, params.salt_version, srpms_pkg) %}
+    {% set srpms_run = '/root/{0}'.format(srpms_pkg) %}
+  {% else %}
     {% set srpms_pkg = 'salt-{0}-1.el{2}.src.rpm'.format(params.salt_version, params.repo_pkg_version, params.os_major_release) %}
     {% set srpms_test = 'https://{0}repo.saltstack.com/{1}/yum/redhat/{2}/x86_64/archive/{3}/SRPMS/{4}'.format(params.repo_auth, params.dev, params.os_major_release, params.salt_version, srpms_pkg) %}
     {% set srpms_run = '/root/{0}'.format(srpms_pkg) %}
-{% elif params.os == 'Amazon' %}
-  {% if branch == '2016.3' %}
-    {% set srpms_pkg = 'salt-{0}-1.el6.src.rpm'.format(params.salt_version) %}
-    {% set srpms_test = 'https://{0}repo.saltstack.com/{1}/yum/redhat/6/x86_64/archive/{2}/SRPMS/{3}'.format(params.repo_auth, params.dev, params.salt_version, srpms_pkg) %}
+  {% endif %}
+{% elif params.os == 'Amazon'  %}
+  {% if params.python3 == True and params.os_code_name == 'Amazon Linux 2' %}
+    {% set srpms_pkg = 'salt-{0}-1.amzn2.src.rpm'.format(params.salt_version) %}
+    {% set srpms_test = 'https://{0}repo.saltstack.com/{1}/py3/amazon/2/x86_64/archive/{2}/SRPMS/{3}'.format(params.repo_auth, params.dev, params.salt_version, srpms_pkg) %}
+    {% set srpms_run = '/root/{0}'.format(srpms_pkg) %}
+  {% elif params.python3 == False and params.os_code_name == 'Amazon Linux 2' %}
+    {% set srpms_pkg = 'salt-{0}-1.el7.src.rpm'.format(params.salt_version) %}
+    {% set srpms_test = 'https://{0}repo.saltstack.com/{1}/yum/amazon/2/x86_64/archive/{2}/SRPMS/{3}'.format(params.repo_auth, params.dev, params.salt_version, srpms_pkg) %}
     {% set srpms_run = '/root/{0}'.format(srpms_pkg) %}
   {% else %}
     {% set srpms_pkg = 'salt-{0}-1.amzn1.src.rpm'.format(params.salt_version) %}
