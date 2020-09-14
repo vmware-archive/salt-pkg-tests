@@ -4,8 +4,8 @@ def run():
     config = {}
     target_host = __pillar__['linux_master']
     get_host  = __salt__['cloud.get_instance'](target_host)
-    if get_host.get('public_ips'):
-        ip = get_host['public_ips'][0]
+    if get_host.get('private_ips'):
+        ip = get_host['private_ips']
 
     config['add_linux_master_roster'] = {
         'file': [
@@ -16,7 +16,7 @@ def run():
             {'context': {'host_ip': ip,
                          'linux_master': __pillar__['linux_master'],
                          'linux_master_user': __pillar__['linux_master_user'],
-                         'linux_master_passwd': __pillar__['linux_master_passwd']}},
+                         'linux_master_key': __pillar__['linux_master_key']}},
         ],
     }
 

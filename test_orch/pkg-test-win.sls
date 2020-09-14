@@ -88,7 +88,7 @@ add_linux_master_roster:
         dev: {{ dev }}
         host: {{ host }}
         linux_master_user: {{ params.linux_master_user }}
-        linux_master_passwd: {{ params.linux_master_passwd }}
+        linux_master_key: {{ params.linux_master_key }}
         linux_master: {{ linux_master }}
 
 sleep_before_verify:
