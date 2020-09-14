@@ -1,13 +1,13 @@
 {% set host = salt['pillar.get']('host') %}
 {% set salt_version = salt['pillar.get']('salt_version', '') %}
-linode_cent7:
+ec2_redhat_7:
   - {{ salt['pillar.get']('linux_master') }}:
       make_master: True
       script_args: -g https://github.com/{{ git_user }}/salt.git -M -P git v{{ salt_version }}
       master:
         hash_type: sha256
         timeout: 10
-{% set win_os = ['10', '2008', '2012', '2016'] %}
+{% set win_os = ['10', '2008', '2012', '2016', '2019'] %}
 {{ profile }}:
   - {{ host }}:
       win_installer: /etc/salt/windows/{{ pkg }}
