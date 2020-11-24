@@ -69,22 +69,24 @@ def get_url(args):
 
     if args.staging:
         repo_url=repo_url + 'staging/'
-    archive = 'archive/'
 
     if 'centos' in args.os:
-        url = repo_url + redhat_url + os_v + redhat_arch + archive + version
+        url = repo_url + redhat_url + os_v + redhat_arch + version
     elif 'debian' in args.os:
-        url = repo_url + debian_url + os_v + debian_arch + archive + version
+        url = repo_url + debian_url + os_v + debian_arch + version
     elif 'ubuntu' in args.os:
-        url = repo_url + ubuntu_url + os_v + debian_arch + archive + version
+        url = repo_url + ubuntu_url + os_v + debian_arch + version
     elif 'pi8' in args.os:
-        url = repo_url + debian_url + '8' + pi_arch + archive +  version
+        url = repo_url + debian_url + '8' + pi_arch + version
     elif 'pi9' in args.os:
-        url = repo_url + debian_url + '9' + pi_arch + archive + version
+        url = repo_url + debian_url + '9' + pi_arch + version
     elif 'osx' in args.os:
         url = repo_url + 'osx'
     elif 'amazon' in args.os:
-        url = repo_url + amazon_url + 'latest' + redhat_arch + archive + version
+        if args.branch == '2016.3':
+            url = repo_url + redhat_url + '6' + redhat_arch + version
+        else:
+            url = repo_url + amazon_url + 'latest' + redhat_arch + version
     elif 'windows' in args.os:
         url = repo_url + windows_url
     return url
@@ -113,34 +115,22 @@ def get_salt_version(url, args, prev_branch=False):
 
     for tag in parse_html.findAll(attrs={'href': re.compile(pkg_name +
                                                            ".*")}):
-        #check for old versioning scheme first
         match = re.search("([0-9]{1,4}\.)([0-9]{1,2}\.)([0-9]{1,2})", str(tag))
-        if not match:
-            #check for minor version first
-            match = re.search("([0-9]{1,4})\.([0-9]{1,4})", str(tag))
-            if not match:
-                match = re.search("([0-9]{1,4})", str(tag))
         salt_ver = (match.group(0))
     return salt_ver
 
 def set_env_vars(**kwargs):
     salt_version = kwargs.get('salt_version')
     ver_split = salt_version.split(".")
-    major = ver_split[0]
-    try:
-        minor = ver_split[1]
-        minor = '.' + minor
-    except IndexError:
-        minor = ''
-    branch = major + minor
-    url = kwargs['url'].replace('staging', '')
-    if int(kwargs['prev_branch'].split('.')[0]) <= 3000:
-        url = url.replace('archive', '')
+    year = ver_split[0]
+    month = ver_split[1]
+    release = ver_split[2]
+    branch = year + '.' + month
 
-    if not minor:
-        upgrade_from_version = get_salt_version(url, kwargs['prev_branch'], prev_branch=True)
+    if kwargs['salt_version'].split('.')[-1:][0] == '0':
+        upgrade_from_version = get_salt_version(kwargs['url'].replace('staging', ''), kwargs['prev_branch'], prev_branch=True)
     else:
-        upgrade_from_version = get_salt_version(url, branch)
+        upgrade_from_version = get_salt_version(kwargs['url'].replace('staging', ''), branch)
 
     output = []
     output.append('SALT_VERSION={0}'.format(salt_version))
@@ -159,4 +149,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
